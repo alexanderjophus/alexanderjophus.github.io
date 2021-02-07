@@ -6,14 +6,24 @@
     <description>Recent content on Alex Writes Code</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 31 Jan 2021 15:51:11 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 07 Feb 2021 15:51:11 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Creating a recommender gRPC service with Machine Learning and Golang (The gRPC bit)</title>
+      <link>/posts/recommender-grpc/</link>
+      <pubDate>Sun, 07 Feb 2021 15:51:11 +0000</pubDate>
+      
+      <guid>/posts/recommender-grpc/</guid>
+      <description>DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+In this post we&amp;rsquo;re going to cover how to define a contract between a client and a server using gRPC. gRPC is an open source Remote Procedure Call framework, it uses protocol buffers as the description language.</description>
+    </item>
+    
     <item>
       <title>Adding compile time information to your go binaries</title>
       <link>/posts/using-ldflags/</link>
       <pubDate>Sun, 31 Jan 2021 15:51:11 +0000</pubDate>
       
       <guid>/posts/using-ldflags/</guid>
-      <description>Written using Go 1.14.2 on a Mac.
+      <description>Written using Go 1.14.6 on a Mac.
 From time to time it&amp;rsquo;s important to be able to tell certain metadata about exactly what is running. A couple important use cases may be; injecting the commit SHA to know exactly what code is running; injecting the build time to know how old the build is; and many more!
 Introducing ldflags! It allows us to inject compile time information into our binaries. Let&amp;rsquo;s take a quick look at a small example.</description>
     </item>

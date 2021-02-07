@@ -3,17 +3,22 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/posts/using-ldflags/</loc>
-    <lastmod>2021-01-31T15:51:11+00:00</lastmod>
+    <loc>/</loc>
+    <lastmod>2021-02-07T15:51:11+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/</loc>
-    <lastmod>2021-01-31T15:51:11+00:00</lastmod>
+    <loc>/posts/recommender-grpc/</loc>
+    <lastmod>2021-02-07T15:51:11+00:00</lastmod>
   </url>
   
   <url>
     <loc>/posts/</loc>
+    <lastmod>2021-02-07T15:51:11+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/posts/using-ldflags/</loc>
     <lastmod>2021-01-31T15:51:11+00:00</lastmod>
   </url>
   

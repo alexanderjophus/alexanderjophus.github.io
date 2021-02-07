@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" data-theme=""><head>
+    <title> Alexander Jophus Trelore | Creating a recommender gRPC service with Machine Learning and Golang (The gRPC bit) </title>
+
+    
+    <meta charset="utf-8"><meta name="generator" content="Hugo 0.80.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="description" content="A simple, lazy approach to all things coding.">
+    
+    <link rel="stylesheet"
+          href="/css/style.min.9a6700e4461b50dccdddfc4f81dc65d77e7fca22c35665e398a0c36568db59c7.css"
+          integrity="sha256-mmcA5EYbUNzN3fxPgdxl135/yiLDVmXjmKDDZWjbWcc="
+          crossorigin="anonymous"
+          type="text/css">
+    
+    <link rel="stylesheet"
+        href="/css/markupHighlight.min.9755453ffb7bc4cd220f86ebb5922107b49f193cc62fc17e9785d27b33a8bf5b.css"
+        integrity="sha256-l1VFP/t7xM0iD4brtZIhB7SfGTzGL8F&#43;l4XSezOov1s="
+        crossorigin="anonymous"
+        type="text/css">
+    
+    <link rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" 
+    integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" 
+    crossorigin="anonymous" />
+
+    
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <link rel="canonical" href="/posts/recommender-grpc/">
+
+    
+    
+    
+    
+    <script type="text/javascript"
+            src="/js/anatole-header.min.d8599ee07b7d3f11bafbac30657ccc591e8d7fd36a9f580cd4c09e24e0e4a971.js"
+            integrity="sha256-2Fme4Ht9PxG6&#43;6wwZXzMWR6Nf9Nqn1gM1MCeJODkqXE="
+            crossorigin="anonymous"></script>
+
+
+    
+        
+        
+        <script type="text/javascript"
+                src="/js/anatole-theme-switcher.min.e289e9ebb2a4e7a7f895859c8a2b0da2de1ec73f22cea58d8475aa0597023837.js"
+                integrity="sha256-4onp67Kk56f4lYWciisNot4exz8izqWNhHWqBZcCODc="
+                crossorigin="anonymous"></script>
+    
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating a recommender gRPC service with Machine Learning and Golang (The gRPC bit)"/>
+<meta name="twitter:description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+In this post we&rsquo;re going to cover how to define a contract between a client and a server using gRPC. gRPC is an open source Remote Procedure Call framework, it uses protocol buffers as the description language."/>
+
+</head>
+<body><div class="sidebar animated fadeInDown ">
+    <div class="logo-title">
+        <div class="title">
+            <img src="/images/profile.jpg" alt="profile picture">
+            <h3 title=""><a href="/">Alexander Jophus</a></h3>
+            <div class="description">
+                <p>A simple, lazy approach to all things coding.</p>
+            </div>
+        </div>
+    </div>
+    <ul class="social-links">
+        
+            <li>
+                <a href="https://github.com/trelore" rel="me" aria-label="GitHub">
+                    <i class="fab fa-github fa-2x" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            <li>
+                <a href="https://twitter.com/AlexanderJophus" rel="me" aria-label="Twitter">
+                    <i class="fab fa-twitter fa-2x" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+    </ul>
+    <div class="footer">
+        <div class="by_farbox">&copy; Alexander Jophus Trelore  2021 </div>
+    </div>
+</div>
+<div class="main">
+    <div class="page-top  animated fadeInDown ">
+    <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+    </a>
+    <ul class="nav" id="navMenu">
+        
+        
+        
+        
+            <li class="theme-switch-item">
+                <a class="theme-switch" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+    </ul>
+</div>
+
+    <div class="autopagerize_page_element">
+        <div class="content">
+    <div class="post  animated fadeInDown ">
+        <div class="post-content">
+            
+            <div class="post-title">
+                <h3>Creating a recommender gRPC service with Machine Learning and Golang (The gRPC bit)</h3>
+                
+            </div>
+
+            <p>DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.</p>
+<p>In this post we&rsquo;re going to cover how to define a contract between a client and a server using gRPC. gRPC is an open source Remote Procedure Call framework, it uses protocol buffers as the description language. For further reading on gRPC, the <a href="https://grpc.io/docs/">official gRPC docs</a> are fantastic. For further reading on protocol buffers, check out <a href="https://developers.google.com/protocol-buffers">googles documentation</a>.</p>
+<p>A quick comparison for those familiar with REST/json, protocol buffers are essentially your JSON, and REST is essentially gRPC. Rather than reiterate <em>why</em> gRPC/proto, <a href="https://cloud.google.com/blog/products/api-management/understanding-grpc-openapi-and-rest-and-when-to-use-them">as it has already been answered</a>, we will explore how to use gRPC/proto.</p>
+<h2 id="defining-the-contracts">Defining the contracts</h2>
+<p>Let&rsquo;s explore the proto defined below to understand what is going on.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-proto" data-lang="proto">syntax <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;proto3&#34;</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#f92672">package</span> irisclassification;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">option</span> go_package <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;github.com/trelore/iris-classification/proto/gen/go/iris-classification;irisclassificationpb&#34;</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// IrisClassificationService is a service
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">service</span> IrisClassificationService {<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#75715e">// Predict the Iris Classification
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">//
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// The prediction will be one of;
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// - Iris-setosa
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// - Iris-versicolor
+</span><span style="color:#75715e"></span>  <span style="color:#75715e">// - Iris-virginica
+</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">rpc</span> Predict(PredictRequest) <span style="color:#66d9ef">returns</span> (PredictResponse);<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// PredictRequest contains all info needed to
+</span><span style="color:#75715e">// classify the iris type
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">message</span> <span style="color:#a6e22e">PredictRequest</span> {<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">float</span> petal_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">float</span> petal_width <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">float</span> sepal_length <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">float</span> sepal_width <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e">// PredictResponse a string containing the iris type
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">message</span> <span style="color:#a6e22e">PredictResponse</span> {<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">string</span> predicition <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;<span style="color:#960050;background-color:#1e0010">
+</span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>On line 1, we declare what syntax we&rsquo;re using, we&rsquo;re using proto3. Proto2 is also available and their are <a href="https://www.crankuptheamps.com/blog/posts/2017/10/12/protobuf-battle-of-the-syntaxes/#">pros/cons of using proto2</a>. On line 3 declared a package of <code>irisclassification</code>, this allows better naming and prevents clashes between different packages. Lastly on line 5 we declare what go package this should be in. We still need to explicitly generate the go code, but this line declares where the module should be <strong>github.com/trelore/iris-classification/proto/gen/go/iris-classification</strong>, followed by what it should be named <strong>irisclassificationpb</strong>.</p>
+<p>In the next chunk of our proto we define the predictor service itself. We give it a name <strong>IrisClassificationService</strong> on line 8, and a little description on line 7 (you can definitely get a little more descriptive). Then we document and define a function on line 15, what&rsquo;s interesting to note is that our request and response messages and both named after the rpc, with the appropriate suffix. This is a convention in proto, itt allows for quick glanceability of what is a request message for what, and what&rsquo;s a response.</p>
+<p>Messages in proto define the contents of the contracts between the client and the server. Messages can contain other messages, primitives, maps, as well as repeated elements. For this example we&rsquo;ve kept our protos fairly simple, the request contains a few floats containing details about the iris flower, and the response is a singular string containing the type of iris our service believes this to be.</p>
+<h2 id="generating-the-code">Generating the code</h2>
+<p>Proto looks great, but how can I use that in my Go/Java/C#/Python/ project? Below is a makefile for how to generate the Go code for our proto definitions. To find out how to apply this to your language, follow <a href="https://grpc.io/docs/tutorials/">one of the grpc tutorials</a>.</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Makefile" data-lang="Makefile"><span style="color:#75715e">## Locations to store google .proto files
+</span><span style="color:#75715e"></span>google_api_base_location <span style="color:#f92672">=</span> vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/
+location <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>google_api_base_location<span style="color:#66d9ef">)</span>google/api/
+http_out <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>location<span style="color:#66d9ef">)</span>http.proto
+annotations_out <span style="color:#f92672">=</span> <span style="color:#66d9ef">$(</span>location<span style="color:#66d9ef">)</span>annotations.proto
+
+PROTOS <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>shell cd proto/idl; find . -path -prune -o -name <span style="color:#e6db74">&#39;*.proto&#39;</span><span style="color:#66d9ef">)</span>
+
+<span style="color:#a6e22e">.PHONY</span><span style="color:#f92672">:</span> proto_cleanup
+<span style="color:#a6e22e">proto_cleanup</span><span style="color:#f92672">:</span> <span style="color:#75715e">## Delete generated proto files
+</span><span style="color:#75715e"></span>	rm -rf proto/gen
+
+<span style="color:#a6e22e">.PHONY</span><span style="color:#f92672">:</span> proto
+<span style="color:#a6e22e">proto</span><span style="color:#f92672">:</span> proto_gen_go <span style="color:#75715e">## Generate the proto files
+</span><span style="color:#75715e"></span>
+<span style="color:#a6e22e">.PHONY</span><span style="color:#f92672">:</span> proto_gen_go
+<span style="color:#a6e22e">proto_gen_go</span><span style="color:#f92672">:</span> proto_imports <span style="color:#75715e">## generate the go files
+</span><span style="color:#75715e"></span>	@mkdir -p proto/gen/go
+	@cd proto/idl <span style="color:#f92672">&amp;&amp;</span> protoc -I<span style="color:#f92672">=</span>. -I../../<span style="color:#66d9ef">$(</span>google_api_base_location<span style="color:#66d9ef">)</span> <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	--go_opt<span style="color:#f92672">=</span>paths<span style="color:#f92672">=</span>source_relative,plugins<span style="color:#f92672">=</span>grpc <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>	--go_out<span style="color:#f92672">=</span>../gen/go <span style="color:#e6db74">${</span>PROTOS<span style="color:#e6db74">}</span>
+
+<span style="color:#a6e22e">.PHONY</span><span style="color:#f92672">:</span> proto_imports
+<span style="color:#a6e22e">proto_imports</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">$(</span>location<span style="color:#66d9ef">)</span>annotations.proto <span style="color:#66d9ef">$(</span>location<span style="color:#66d9ef">)</span>http.proto
+</code></pre></td></tr></table>
+</div>
+</div><p>We have a few helper recipies here, however day to day we would use <code>make proto</code> and <code>make proto_clean</code>. The former generates our go code, while the latter removes all of our generated code. There&rsquo;s many resources to find out <a href="https://www.tutorialspoint.com/makefile/index.htm">how to use makefiles</a>.</p>
+<p>We end up with the following code (and so much more!).</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// IrisClassificationServiceClient is the client API for IrisClassificationService service.
+</span><span style="color:#75715e">//
+</span><span style="color:#75715e">// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">IrisClassificationServiceClient</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#75715e">// Predict the Iris Classification
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The prediction will be one of;
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// - Iris-setosa
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// - Iris-versicolor
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// - Iris-virginica
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">Predict</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">in</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">PredictRequest</span>, <span style="color:#a6e22e">opts</span> <span style="color:#f92672">...</span><span style="color:#a6e22e">grpc</span>.<span style="color:#a6e22e">CallOption</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">PredictResponse</span>, <span style="color:#66d9ef">error</span>)
+}
+
+<span style="color:#75715e">// IrisClassificationServiceServer is the server API for IrisClassificationService service.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">IrisClassificationServiceServer</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#75715e">// Predict the Iris Classification
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The prediction will be one of;
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// - Iris-setosa
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// - Iris-versicolor
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// - Iris-virginica
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">Predict</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#f92672">*</span><span style="color:#a6e22e">PredictRequest</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">PredictResponse</span>, <span style="color:#66d9ef">error</span>)
+}
+
+<span style="color:#75715e">// UnimplementedIrisClassificationServiceServer can be embedded to have forward compatible implementations.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">UnimplementedIrisClassificationServiceServer</span> <span style="color:#66d9ef">struct</span> {
+}
+
+<span style="color:#66d9ef">func</span> (<span style="color:#f92672">*</span><span style="color:#a6e22e">UnimplementedIrisClassificationServiceServer</span>) <span style="color:#a6e22e">Predict</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#f92672">*</span><span style="color:#a6e22e">PredictRequest</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">PredictResponse</span>, <span style="color:#66d9ef">error</span>) {
+	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">status</span>.<span style="color:#a6e22e">Errorf</span>(<span style="color:#a6e22e">codes</span>.<span style="color:#a6e22e">Unimplemented</span>, <span style="color:#e6db74">&#34;method Predict not implemented&#34;</span>)
+}
+</code></pre></td></tr></table>
+</div>
+</div><p>Parsing this, we see the client is an interface which is great because this means we can mock it super easily. It defines exactly what we expect and nothing more. We see the same is also true for the server, there&rsquo;s an interface we can fulfil. What&rsquo;s also interesting is there is an <code>UnimplementedIrisClassificationServiceServer</code>, we can point to this in our server code when developing. This allows us to always be compliant with the interface, however we simply return <code>Unimplemented</code> for the functions we haven&rsquo;t implemented (readers call on if this is good or not).</p>
+<h2 id="in-summary">In Summary</h2>
+<p>We have;</p>
+<ul>
+<li>Defined our service and endpoint</li>
+<li>Generated the Go code that we can use to implement our service</li>
+</ul>
+<p>Next we will;</p>
+<ul>
+<li>Implement a service that returns a random result</li>
+</ul>
+</div>
+        <div class="post-footer">
+            <div class="info">
+                
+                
+            </div>
+        </div>
+
+        
+    </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript"
+        src="/js/jquery.min.86b1e8f819ee2d9099a783e50b49dff24282545fc40773861f9126b921532e4c.js"
+        integrity="sha256-hrHo&#43;BnuLZCZp4PlC0nf8kKCVF/EB3OGH5EmuSFTLkw="
+        crossorigin="anonymous"></script>
+
+
+
+
+<script type="text/javascript"
+        src="/js/bundle.min.0f9c74cb78f13d1f15f33daff4037c70354f98acfbb97a6f61708966675c3cae.js"
+        integrity="sha256-D5x0y3jxPR8V8z2v9AN8cDVPmKz7uXpvYXCJZmdcPK4="
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript"
+        src="/js/medium-zoom.min.92f21c856129f84aeb719459b3e6ac621a3032fd7b180a18c04e1d12083f8aba.js"
+        integrity="sha256-kvIchWEp&#43;ErrcZRZs&#43;asYhowMv17GAoYwE4dEgg/iro="
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
