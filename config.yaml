@@ -1,0 +1,19 @@
+baseURL: 'http://example.org/'
+languageCode: 'en'
+title: 'Alexander Joseph'
+theme: "ananke"
+
+deployment:
+  targets:
+    name: personal-blog
+    URL: gs://jophus-blog-5038fb4
+
+    matchers:
+    - pattern: "^.+\\.(js|css|svg|ttf)$"
+      cacheControl: "max-age=31536000, no-transform, public"
+      gzip: true
+    - pattern: "^.+\\.(png|jpg)$"
+      cacheControl: "max-age=31536000, no-transform, public"
+      gzip: false
+    - pattern: "^.+\\.(html|xml|json)$"
+      gzip: true
