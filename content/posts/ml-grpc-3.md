@@ -1,6 +1,6 @@
 ---
 title: "3/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (creating a model)"
-date: 2021-11-07T10:37:11+01:00
+date: 2021-11-06T10:37:11+01:00
 draft: false
 tags: ['iris']
 ---
