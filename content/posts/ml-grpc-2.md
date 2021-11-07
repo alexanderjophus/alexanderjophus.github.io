@@ -1,7 +1,8 @@
 ---
-title: "2/? CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server)"
+title: "2/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server)"
 date: 2021-11-06T15:37:11+01:00
 draft: false
+tags: ['iris']
 ---
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.

@@ -1,7 +1,8 @@
 ---
-title: "1/? CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (the gRPC bit)"
+title: "1/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (the gRPC bit)"
 date: 2021-02-07T15:37:11+01:00
 draft: false
+tags: ['iris']
 ---
 
 Edited 05/11/2021: Uses buf for proto generation/linting
