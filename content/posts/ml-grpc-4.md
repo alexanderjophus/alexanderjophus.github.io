@@ -1,7 +1,7 @@
 ---
 title: "4/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (finishing the project)"
 date: 2021-11-07T18:37:11+01:00
-draft: true
+draft: false
 tags: ['iris']
 ---
 
