@@ -1,5 +1,5 @@
 ---
-title: "1/? CREATING A RECOMMENDER GRPC SERVICE WITH MACHINE LEARNING AND GOLANG (the gRPC bit)"
+title: "1/? CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (the gRPC bit)"
 date: 2021-02-07T15:37:11+01:00
 draft: false
 ---
@@ -8,7 +8,12 @@ Edited 05/11/2021: Uses buf for proto generation/linting
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
 
-For the full source code, visit [iris-classification](https://github.com/trelore/iris-classification).
+For the full source code, visit [trelore/iris-classification](https://github.com/trelore/iris-classification).
+
+## Intro
+
+We'll discover what proto is, create and define a service.
+We will also generate code through buf.
 
 ## An intro to gRPC
 
@@ -16,7 +21,7 @@ In this post we’re going to cover how to define a contract between a client an
 
 A quick comparison for those familiar with REST/json, protocol buffers are essentially your JSON, and REST is essentially gRPC. Rather than reiterate why gRPC/proto, [as it has already been answered](https://cloud.google.com/blog/products/api-management/understanding-grpc-openapi-and-rest-and-when-to-use-them), we will explore how to use gRPC/proto.
 
-## Defining the contracts
+## Defining the service
 
 Let’s explore the proto defined below to understand what is going on.
 
@@ -105,7 +110,7 @@ func (UnimplementedIrisClassificationServiceServer) Predict(context.Context, *Pr
 
 Parsing this, we see the client is an interface which is great because this means we can test our code super easily. It defines exactly what we expect and nothing more. We see the same is also true for the server, there’s an interface we can fulfil. What’s also interesting is there is an `UnimplementedIrisClassificationServiceServer`, we can point to this in our server code when developing. This allows us to always be compliant with the interface, however we simply return Unimplemented for the functions we haven’t implemented (readers call on if this is good or not).
 
-# In Summary
+## In Summary
 We have;
 
 - Defined our service and endpoint

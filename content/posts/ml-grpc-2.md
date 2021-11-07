@@ -1,12 +1,12 @@
 ---
-title: "2/? CREATING A RECOMMENDER GRPC SERVICE WITH MACHINE LEARNING AND GOLANG (implementing a server)"
+title: "2/? CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server)"
 date: 2021-11-06T15:37:11+01:00
 draft: false
 ---
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
 
-For the full source code, visit [iris-classification](https://github.com/trelore/iris-classification).
+For the full source code, visit [trelore/iris-classification](https://github.com/trelore/iris-classification).
 
 ## Intro
 
@@ -169,3 +169,12 @@ sepal_width (TYPE_FLOAT) => 3.4
   "predicition": "iris setosa"
 }
 ```
+
+## In Summary
+We have;
+
+- Created a gRPC service
+- Tested it runs correctly
+
+Next we will;
+- Create a model for our service to consume
