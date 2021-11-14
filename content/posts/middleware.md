@@ -1,7 +1,7 @@
 ---
 title: "ADDING MIDDLEWARE TO A gRPC GO SERVICE"
 date: 2021-11-14T11:17:51Z
-draft: true
+draft: false
 tags: ['iris']
 ---
 
