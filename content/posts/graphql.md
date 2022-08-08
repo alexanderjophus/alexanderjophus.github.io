@@ -4,8 +4,6 @@ date: 2021-11-28T17:31:17Z
 draft: false
 ---
 
-Catch the streams over on my [twitch](https://www.twitch.tv/dejophus)
-
 To view the final repo browse my [github](https://github.com/trelore/formulagraphql)
 
 ## Intro

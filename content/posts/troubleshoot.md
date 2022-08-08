@@ -13,7 +13,7 @@ I thought I understood kubernetes; I had provisioned clusters from scratch, I ha
 I then joined a organisation whose expertise were kubernetes, and oh boy did I have a lot to learn.
 
 This isn't a blog post of what I've learned, I think that's a useless post, it'd be irrelevant in 3 weeks.
-This _is_ a post on how to debug clusters, which I'm hoping will stay relevant for a little while longer.
+This _is_ a post on how to debug clusters using concepts from troubleshoot, which I'm hoping will stay relevant for a little while longer.
 
 ## The Basics
 
@@ -102,7 +102,7 @@ There are so many more [collectors](https://troubleshoot.sh/docs/collect/collect
 
 ### Writing your Redactor
 
-Redactors are inredibly useful tools to remove sensitive information from your collected data.
+Redactors are incredibly useful tools to remove sensitive information from your collected data.
 You can remove passwords from secrets, ip addresses from config maps, and PII from logs.
 Or any combination of that and more!
 
@@ -126,5 +126,77 @@ spec:
         regex:
         - selector: 'password'
           redactor: '("value": ").*(")'
+```
 
 ### Writing your Analyzer
+
+## All Together
+
+`secrets.yaml` kubectl create secret -n default generic mysecret --from-file=secrets.yaml
+
+```yaml
+username: Alexander
+password: "12345678"
+```
+
+`deployment.yaml` kubectl apply -f deployment.yaml
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox
+  labels:
+    run: busybox
+spec:
+  containers:
+    - command:
+      - sleep
+      - "3600"
+      image: busybox
+      name: busybox
+      volumeMounts:
+        - name: foo
+          mountPath: "/etc/foo"
+          readOnly: true
+  volumes:
+    - name: foo
+      secret:
+        secretName: mysecret
+        optional: false
+```
+
+`support-bundle.yaml` kubectl support-bundle -f support-bundle.yaml
+
+```yaml
+apiVersion: troubleshoot.sh/v1beta2
+kind: SupportBundle
+metadata:
+  name: sample
+spec:
+  collectors:
+    - copy:
+        selector:
+          - run=busybox
+        namespace: default
+        containerPath: /etc/foo
+        containerName: busybox
+  redactors:
+  - name: all files
+    removals:
+      yamlPath:
+      - "password"
+  analyzers:
+    - yamlCompare:
+        checkName: Compare YAML Example
+        fileName: /etc/foo/secrets.yaml
+        path: "username"
+        value: "Alexander"
+        outcomes:
+          - fail:
+              when: "false"
+              message: The collected data does not match the value.
+          - pass:
+              when: "true"
+              message: The collected data matches the value.
+```

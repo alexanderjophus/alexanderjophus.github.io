@@ -5,7 +5,6 @@ theme: "ananke"
 deployment:
   targets:
     name: personal-blog
-    # URL: gs://jophus-blog-5038fb4
 
     matchers:
     - pattern: "^.+\\.(js|css|svg|ttf)$"
