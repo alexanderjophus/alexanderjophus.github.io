@@ -1,7 +1,8 @@
 ---
 title: "TROUBLESHOOT (A guide on debugging kubernetes)"
-date: 2022-04-16T11:02:31-07:00
-draft: true
+date: 2022-08-14T11:02:31Z
+draft: false
+tags: ['troubleshoot']
 ---
 
 ## Intro
@@ -46,6 +47,7 @@ Both of these have 3 components; collectors, redactors, and analyzers.
 **Redactors** (again as the name implies), allow users to redact information.
 The use case here being that a collector may collect sensitive information such as database connection strings.
 This step allows us to remove any sensitive information in a couple of different ways.
+By default there are a few redactors run.
 
 Lastly we have **analyzers** (also excellently named if I may add), instead of manually going through an incredibly large amount of information, the analyzers allow users to quickly highlight issues with the cluster.
 
@@ -64,82 +66,95 @@ Once your demo application (or real application) is ready to be troubleshot (tro
 
 ### Writing your Collector
 
-We're going to focus on a couple of different collectors to show the range of information we can collect.
-Firstly, we're just going add a couple of high level collectors. 
+There are many types of collectors to choose from, varying from host level information to copy files from pods.
+We're going to copy a file from a pod.
 
 ```yaml
 apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
-  name: sample
+  name: example
 spec:
   collectors:
-    - clusterInfo: {}
-    - clusterResources: {}
-```
-
-The important thing to note here is `collectors` is a list.
-
-The first thing in that list we're collecting is [clusterInfo](https://troubleshoot.sh/docs/collect/cluster-info/), this will give us information on the version of k8s being used.
-
-Another high level collector we have is [cluster-resources](https://troubleshoot.sh/docs/collect/cluster-resources/).
-At a high level if you can do `kubectl get <resource>`, this collector will find it (this is important for another blog post).
-
-Lastly, we're also going to add a kubernetes secret collector.
-
-```yaml
-    - secret:
+    - copy:
+        selector:
+          - run=busybox
         namespace: default
-        name: mysecret
-        includeValue: true
-        key: password
+        containerPath: /etc/foo
+        containerName: busybox
 ```
 
-By default the value of the secret is not collected, but we can include it by setting `includeValue` to `true`.
-We're going to include it so that we can redact it later (this is mostly for demonstration purposes).
+This will copy the path `/etc/foo` from the pod with the label `run=busybox` into the support bundle.
 
-There are so many more [collectors](https://troubleshoot.sh/docs/collect/collectors/), I'd heavily recommend exploring them, trying out ones that may be useful etc.
+There are so many more [collectors](https://troubleshoot.sh/docs/collect/all/), I'd heavily recommend exploring them, trying out ones that may be useful etc.
 
 ### Writing your Redactor
 
-Redactors are incredibly useful tools to remove sensitive information from your collected data.
-You can remove passwords from secrets, ip addresses from config maps, and PII from logs.
-Or any combination of that and more!
+Redactors are slightly different in that they have their own manifest Kind (i.e. it's not SupportBundle or Preflight)
 
-Taking ip addresses as the example, we can remove specific ip addresses, or use regex to remove all ip addresses.
+```yaml
+apiVersion: troubleshoot.sh/v1beta2
+kind: Redactor
+metadata:
+  name: example
+spec:
+  redactors:
+  - name: all files
+    removals:
+      yamlPath:
+      - password
+```
 
-If we run the support bundle we have above, you'll notice our password is exposed to the world. Oh no!
-This is a security issue, so we'll need to redact it.
-  
+There are a few different ways to [redact information](https://troubleshoot.sh/docs/redact/redactors/), we've chosen yamlPath as in our collector we're collecting a yaml file.
+
+### Writing your Analyzer
+
+These allows us to quickly identify issues with the cluster.
+
 ```yaml
 apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
-  name: sample
+  name: example
 spec:
-spec:
-  collectors:
-    {{ as above}}
-  redactors:
-    - name: Redact password
-      removals:
-        regex:
-        - selector: 'password'
-          redactor: '("value": ").*(")'
+  analyzers:
+    - yamlCompare:
+        checkName: Compare YAML Example
+        fileName: default/busybox/busybox/etc/foo/secrets.yaml
+        path: username
+        value: "Alexander"
+        outcomes:
+          - fail:
+              when: "false"
+              message: The collected data does not match the value.
+          - pass:
+              when: "true"
+              message: The collected data matches the value
 ```
 
-### Writing your Analyzer
+Following our yaml obsession, we're going to use yamlCompare, this will allow us to specify a file, path and value to compare against.
+We can also specify the pass and fail conditions.
+
+As with collectors and redactors, there are also many [analysers](https://troubleshoot.sh/docs/analyze/)
 
 ## All Together
 
-`secrets.yaml` kubectl create secret -n default generic mysecret --from-file=secrets.yaml
+`secrets.yaml` 
+
+```sh
+kubectl create secret -n default generic mysecret --from-file=secrets.yaml
+```
 
 ```yaml
 username: Alexander
 password: "12345678"
 ```
 
-`deployment.yaml` kubectl apply -f deployment.yaml
+`deployment.yaml`
+
+```sh
+kubectl apply -f deployment.yaml
+```
 
 ```yaml
 apiVersion: v1
@@ -157,7 +172,8 @@ spec:
       name: busybox
       volumeMounts:
         - name: foo
-          mountPath: "/etc/foo"
+          mountPath: /etc/foo/secrets.yaml # needed for volumeMounts
+          subPath: secrets.yaml # needed otherwise it's a symlink
           readOnly: true
   volumes:
     - name: foo
@@ -166,13 +182,16 @@ spec:
         optional: false
 ```
 
-`support-bundle.yaml` kubectl support-bundle -f support-bundle.yaml
+`support-bundle.yaml` 
+```sh
+kubectl support-bundle -f support-bundle.yaml
+```
 
 ```yaml
 apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
-  name: sample
+  name: example
 spec:
   collectors:
     - copy:
@@ -181,16 +200,11 @@ spec:
         namespace: default
         containerPath: /etc/foo
         containerName: busybox
-  redactors:
-  - name: all files
-    removals:
-      yamlPath:
-      - "password"
   analyzers:
     - yamlCompare:
         checkName: Compare YAML Example
-        fileName: /etc/foo/secrets.yaml
-        path: "username"
+        fileName: default/busybox/busybox/etc/foo/secrets.yaml
+        path: username
         value: "Alexander"
         outcomes:
           - fail:
@@ -198,5 +212,27 @@ spec:
               message: The collected data does not match the value.
           - pass:
               when: "true"
-              message: The collected data matches the value.
+              message: The collected data matches the value
+---
+apiVersion: troubleshoot.sh/v1beta2
+kind: Redactor
+metadata:
+  name: example
+spec:
+  redactors:
+  - name: all files
+    removals:
+      yamlPath:
+      - password
 ```
+
+With this you should see a support bundle in your terminal. (you can ignore this if you used `--interactive`).
+
+You can then share this bundle with the maintainers of your cluster, or anyone else that's interested
+
+## Conclusion
+
+To recap; we're created a secret, deployed a pod, and created a support bundle.
+We have redacted the users password, and automatically confirmed the users username is correct.
+
+Obviously this example is quite contrived, however hopefully it gets the point across of how automation can easily diagnose problems with your cluster.
