@@ -102,7 +102,7 @@ if err != nil {
 }
 ```
 
-For brevity I'll link the [generateKubeconfig function](https://github.com/trelore/pulumi/blob/662eb960002abd22cc4caf1016643601a097debf/main.go#L152-L182).
+For brevity I'll link the [generateKubeconfig function](https://github.com/alexanderjophus/pulumi/blob/662eb960002abd22cc4caf1016643601a097debf/main.go#L152-L182).
 
 Important things to note from the snippet above;
 - `ctx.Export` will export a variable `kubeconfig`, which we can use outside of our pulumi script.

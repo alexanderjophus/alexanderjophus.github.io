@@ -7,7 +7,7 @@ tags: ['iris']
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
 
-For the full source code, visit [trelore/iris-classification](https://github.com/trelore/iris-classification).
+For the full source code, visit [alexanderjophus/iris-classification](https://github.com/alexanderjophus/iris-classification).
 
 ## Intro
 
@@ -70,7 +70,7 @@ For further reading of this, [gorgonia released a blog post talking about this](
 The main take aways for this blog/tutorial is the `save` func, where we get a `theta.bin`, which is our model.
 Awesome.
 
-Our implementation of this section can be found in our repo at [cmd/train](https://github.com/trelore/iris-classification/tree/main/cmd/train).
+Our implementation of this section can be found in our repo at [cmd/train](https://github.com/alexanderjophus/iris-classification/tree/main/cmd/train).
 
 You should be able to run `go run cmd/train/main.go`, which should print out its progress and leave a model in the root of our repository.
 This should only take a second or so.
@@ -131,7 +131,7 @@ func run(cmd *cobra.Command, args []string) {
 What we're interested in mostly are `values` 0-3, they are what represents the petal/sepal width/length.
 Play about with those numbers and run the code with, you should see the application predicting from the 3 classes of iris.
 
-Our implementation of this section can be found in our repo at [cmd/predict](https://github.com/trelore/iris-classification/tree/main/cmd/predict).
+Our implementation of this section can be found in our repo at [cmd/predict](https://github.com/alexanderjophus/iris-classification/tree/main/cmd/predict).
 
 # In Summary
 We have;

@@ -1,0 +1,5 @@
+DirectoryPath: "public"
+IgnoreDirectoryMissingTrailingSlash: true
+IgnoreEmptyHref: true
+IgnoreURLs:
+- https://twitter.com

@@ -9,7 +9,7 @@ Edited 05/11/2021: Uses buf for proto generation/linting
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
 
-For the full source code, visit [trelore/iris-classification](https://github.com/trelore/iris-classification).
+For the full source code, visit [alexanderjophus/iris-classification](https://github.com/alexanderjophus/iris-classification).
 
 ## Intro
 
@@ -31,7 +31,7 @@ syntax = "proto3";
 
 package iris_classification.v1;
 
-option go_package = "github.com/trelore/iris-classification/proto/gen/go;irisclassificationpb";
+option go_package = "github.com/alexanderjophus/iris-classification/proto/gen/go;irisclassificationpb";
 
 // IrisClassificationService is a service to predict the Iris Classification given input
 service IrisClassificationService {
@@ -59,7 +59,7 @@ message PredictResponse {
 
 ```
 
-On line 1, we declare what syntax we’re using, we’re using proto3. Proto2 is also available and there are [pros/cons of using proto2](https://www.crankuptheamps.com/blog/posts/2017/10/12/protobuf-battle-of-the-syntaxes/). On line 3 declared a package of irisclassification, this allows better naming and prevents clashes between different packages. Lastly on line 5 we declare what go package this should be in. We still need to explicitly generate the go code, but this line declares where the module should be **github.com/trelore/iris-classification/proto/gen/go**, followed by what it should be named **irisclassificationpb**.
+On line 1, we declare what syntax we’re using, we’re using proto3. Proto2 is also available and there are [pros/cons of using proto2](https://www.crankuptheamps.com/blog/posts/2017/10/12/protobuf-battle-of-the-syntaxes/). On line 3 declared a package of irisclassification, this allows better naming and prevents clashes between different packages. Lastly on line 5 we declare what go package this should be in. We still need to explicitly generate the go code, but this line declares where the module should be **github.com/alexanderjophus/iris-classification/proto/gen/go**, followed by what it should be named **irisclassificationpb**.
 
 In the next chunk of our proto we define the predictor service itself. We give it a name **IrisClassificationService** on line 8, and a little description on line 7 (you can definitely get a little more descriptive). Then we document and define a function on line 15, what’s interesting to note is that our request and response messages and both named after the rpc, with the appropriate suffix. This is a convention in proto, it allows for quick glanceability of what is a request message for what, and what’s a response.
 

@@ -35,7 +35,7 @@ Let's do it!
 
 ## Instrumenting our service
 
-I'm going to pick the [iris classifier service](https://github.com/trelore/iris-classification).
+I'm going to pick the [iris classifier service](https://github.com/alexanderjophus/iris-classification).
 For a basic run down, it's a service with an embedded ML model, a request comes in with iris sepal/petal width/length and the service predicts what type of iris it is.
 If that sounds interesting, check the [blog](https://alexanderjophus.github.io/tags/iris/).
 

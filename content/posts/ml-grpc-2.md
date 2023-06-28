@@ -7,7 +7,7 @@ tags: ['iris']
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
 
-For the full source code, visit [trelore/iris-classification](https://github.com/trelore/iris-classification).
+For the full source code, visit [alexanderjophus/iris-classification](https://github.com/alexanderjophus/iris-classification).
 
 ## Intro
 
@@ -17,14 +17,14 @@ In this section we're going to implement a gRPC service and test it via manual e
 
 For this we will ignore all machine learning and just get our server returning a random iris classification.
 Simple enough.
-For this we'll be using [cobra](github.com/spf13/cobra), a library to help make go executables.
+For this we'll be using [cobra](https://github.com/spf13/cobra), a library to help make go executables.
 We'll also be adopting some patterns highlighted by Mat Ryers [How I write Go Services](https://www.youtube.com/watch?v=rWBSMsLG8po) talk.
 Let's start!
 
 ```go
 package main
 
-import "github.com/trelore/iris-classification/svc/cmd"
+import "github.com/alexanderjophus/iris-classification/svc/cmd"
 
 func main() {
 	cmd.Execute()
@@ -63,8 +63,8 @@ Let's look into that `run()` function in further detail, we need to set up our s
 
 ```go
 import (
-	pb "github.com/trelore/iris-classification/proto/gen/go/iris_classification/v1"
-	"github.com/trelore/iris-classification/svc/server"
+	pb "github.com/alexanderjophus/iris-classification/proto/gen/go/iris_classification/v1"
+	"github.com/alexanderjophus/iris-classification/svc/server"
 	"google.golang.org/grpc"
 )
 
@@ -102,7 +102,7 @@ package server
 import (
 	"context"
 
-	pb "github.com/trelore/iris-classification/proto/gen/go/iris_classification/v1"
+	pb "github.com/alexanderjophus/iris-classification/proto/gen/go/iris_classification/v1"
 )
 
 // New returns a new S

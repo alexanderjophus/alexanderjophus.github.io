@@ -7,7 +7,7 @@ tags: ['iris']
 
 DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
 
-For the full source code, visit [trelore/iris-classification](https://github.com/trelore/iris-classification).
+For the full source code, visit [alexanderjophus/iris-classification](https://github.com/alexanderjophus/iris-classification).
 
 ## Intro
 

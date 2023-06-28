@@ -4,7 +4,7 @@ date: 2021-11-28T17:31:17Z
 draft: false
 ---
 
-To view the final repo browse my [github](https://github.com/trelore/formulagraphql)
+To view the final repo browse my [github](https://github.com/alexanderjophus/formula1)
 
 ## Intro
 
@@ -112,7 +112,7 @@ All we need to do is implement the filter, and make the request to the REST API,
 
 ## Implementing the Resolvers
 
-For brevity, I'm just going to link to the [code](https://github.com/trelore/formulagraphql/blob/4197607d66bfeda6b5dad235237d06bf56eb6a8b/graph/schema.resolvers.go#L21-L54).
+For brevity, I'm just going to link to the [code](https://github.com/alexanderjophus/formulagraphql/blob/4197607d66bfeda6b5dad235237d06bf56eb6a8b/graph/schema.resolvers.go#L21-L54).
 
 If you've ever written a tool that calls a RESTful API this code should look familiar to you.
 It's a bit scrappy - I will admit - however it gets the job done.
