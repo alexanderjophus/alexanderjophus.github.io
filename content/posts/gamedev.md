@@ -1,12 +1,13 @@
 ---
 title: "2D GAMEDEV IN GO?"
-date: 2022-11-12T11:13:19Z
+date: 2023-06-29T18:13:19Z
 draft: true
 ---
 
 # Intro
 
 It's time we take a serious look at Go for game development.
+Not that I'm an authority on Go, nor game development.
 If we were to have one of those websites that asks 'Are we gamedev yet?', personally I'd say yes.
 Let's have a quick look at Awesome Go's [game development section](https://github.com/avelino/awesome-go#game-development).
 There's a wealth of libraries and frameworks to choose from, but I'm going to focus on [ebitengine](https://ebitengine.org/).
@@ -18,12 +19,19 @@ I'll try to provide as much reading material as possible from people who know wh
 # Getting up to speed
 
 I think for this blog post to be effective, we need to be on a level playing ground.
-We'll assume a basic understanding of Go, but we'll also assume no knowledge of game development.
+We'll assume a basic understanding of Go, but we'll also assume no knowledge of game development, because that's where I was when I started.
 
 ## How do I make a game?
 
-Honestly, I'm still learning this.
-So here's some reading material from people smarter than me:
+So here's some material from people smarter than me:
+- Written articles
+	- [How to make a video game](https://www.bitdegree.org/tutorials/how-to-make-a-video-game/)
+	- [Learn indie game development](https://spin.atomicobject.com/2020/06/28/learn-indie-game-dev/)
+	- [Ask chatGPT](https://chat.openai.com/share/a0bf602a-3332-4a4c-90ea-92394816752d)
+- Videos
+	- [Learn to use bevy 0.10](https://www.youtube.com/watch?v=TQt-v_bFdao)
+	- [How to make a game in Unity](https://www.youtube.com/watch?v=IlKaB1etrik)
+
 
 ## What is Ebitengine?
 
@@ -104,5 +112,3 @@ The main two functions here are `Update` and `Draw`, we'll explore them in more 
 Finally we call [ebiten.RunGame](https://github.com/hajimehoshi/ebiten/blob/2.4/run.go#L170-L211), which will handle pretty much all the game loop stuff for us.
 It will call `Update` and `Draw` at the correct times, and handle input and audio.
 We just need to plug in the functionality. Simple. You might even say it's dead simple.
-
-# 
