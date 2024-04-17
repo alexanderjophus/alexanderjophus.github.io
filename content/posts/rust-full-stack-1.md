@@ -1,7 +1,7 @@
 ---
 draft: false
 date: 2024-04-14T18:49:37+01:00
-title: "Creating a full stack web app in Rust"
+title: "Creating a full stack web app in Rust 1/3"
 tags: ['rust']
 ---
 
