@@ -5,6 +5,8 @@ title: "Creating a full stack web app in Rust 1/3"
 tags: ['rust']
 ---
 
+[Source Code](https://github.com/alexanderjophus/cyber-sleuth)
+
 ## Intro
 
 For those that know me or read the last blog post, you'll know Rust has become my new favourite (I'm sorry Go, I still love you).

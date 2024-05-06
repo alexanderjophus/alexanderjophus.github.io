@@ -5,6 +5,8 @@ title: "Creating a full stack web app in Rust 2/3"
 tags: ['rust']
 ---
 
+[Source Code](https://github.com/alexanderjophus/cyber-sleuth)
+
 ## Intro/Recap
 
 Last post we talked about how to use Pavex and Diesel to create a simple web server.
