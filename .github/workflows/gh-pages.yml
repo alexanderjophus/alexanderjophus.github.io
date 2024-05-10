@@ -21,16 +21,9 @@ jobs:
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: '0.85.0'
-          # extended: true
 
       - name: Build
         run: hugo --minify
-
-      # - name: Test HTML
-      #   continue-on-error: true
-      #   uses: wjdp/htmltest-action@master
-      #   with:
-      #     config: .htmltest.yml
           
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
