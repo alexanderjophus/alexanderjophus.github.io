@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+  Creating a full stack web app in Rust 1/3 · Alexander Jophus
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="Alexander Jophus">
+<meta name="description" content="Source Code
+
+  Intro
+  
+    
+    Link to heading
+  
+
+For those that know me or read the last blog post, you&rsquo;ll know Rust has become my new favourite (I&rsquo;m sorry Go, I still love you).
+In this post, we&rsquo;ll be creating a full stack web app in Rust, using a few libraries I&rsquo;ve come to love, and deploying it super super cheap.
+
+  The Stack
+  
+    
+    Link to heading
+  
+
+
+Server - Pavex
+DB ORM - Diesel
+Server Hosting - Shuttle
+Website - Dioxus
+
+
+  The Idea
+  
+    
+    Link to heading
+  
+
+Let&rsquo;s start where every side project starts, the idea.
+Every good idea for a side project begins with something the developer is passionate about.
+For me, it was Pokémon, but I&rsquo;ve had too many side projects based on that idea, so I went with the next best thing, Digimon.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Creating a full stack web app in Rust 1/3">
+  <meta name="twitter:description" content="Source Code
+Intro Link to heading For those that know me or read the last blog post, you’ll know Rust has become my new favourite (I’m sorry Go, I still love you). In this post, we’ll be creating a full stack web app in Rust, using a few libraries I’ve come to love, and deploying it super super cheap.
+The Stack Link to heading Server - Pavex DB ORM - Diesel Server Hosting - Shuttle Website - Dioxus The Idea Link to heading Let’s start where every side project starts, the idea. Every good idea for a side project begins with something the developer is passionate about. For me, it was Pokémon, but I’ve had too many side projects based on that idea, so I went with the next best thing, Digimon.">
+
+<meta property="og:url" content="//localhost:1313/posts/rust-full-stack-1/">
+  <meta property="og:site_name" content="Alexander Jophus">
+  <meta property="og:title" content="Creating a full stack web app in Rust 1/3">
+  <meta property="og:description" content="Source Code
+Intro Link to heading For those that know me or read the last blog post, you’ll know Rust has become my new favourite (I’m sorry Go, I still love you). In this post, we’ll be creating a full stack web app in Rust, using a few libraries I’ve come to love, and deploying it super super cheap.
+The Stack Link to heading Server - Pavex DB ORM - Diesel Server Hosting - Shuttle Website - Dioxus The Idea Link to heading Let’s start where every side project starts, the idea. Every good idea for a side project begins with something the developer is passionate about. For me, it was Pokémon, but I’ve had too many side projects based on that idea, so I went with the next best thing, Digimon.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-04-14T18:49:37+01:00">
+    <meta property="article:modified_time" content="2024-04-14T18:49:37+01:00">
+    <meta property="article:tag" content="Rust">
+
+
+
+
+<link rel="canonical" href="//localhost:1313/posts/rust-full-stack-1/">
+
+
+<link
+  rel="preload"
+  href="/fonts/forkawesome-webfont.woff2?v=1.2.0"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+  
+<link rel="stylesheet" href="/css/coder.css" media="screen" />
+ 
+
+
+
+
+
+ 
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>
+
+  </head>
+
+   
+
+  <body
+    class="preload-transitions colorscheme-light"
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="//localhost:1313/">
+      Alexander Jophus
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/sl/">SL</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="https://pokedex.alexanderjophus.dev">Pokédex</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="//localhost:1313/posts/rust-full-stack-1/">
+              Creating a full stack web app in Rust 1/3
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-04-14T18:49:37&#43;01:00">
+                April 14, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              7-minute read
+            </span>
+          </div>
+          
+          
+          <div class="tags">
+  <i class="fa fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/tags/rust/">Rust</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p><a href="https://github.com/alexanderjophus/cyber-sleuth" target="_blank">Source Code</a></p>
+<h2 id="intro">
+  Intro
+  <a class="heading-link" href="#intro">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>For those that know me or read the last blog post, you&rsquo;ll know Rust has become my new favourite (I&rsquo;m sorry Go, I still love you).
+In this post, we&rsquo;ll be creating a full stack web app in Rust, using a few libraries I&rsquo;ve come to love, and deploying it super super cheap.</p>
+<h2 id="the-stack">
+  The Stack
+  <a class="heading-link" href="#the-stack">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<ul>
+<li>Server - <a href="https://pavex.dev/" target="_blank">Pavex</a></li>
+<li>DB ORM - <a href="https://diesel.rs/" target="_blank">Diesel</a></li>
+<li>Server Hosting - <a href="https://shuttle.rs/" target="_blank">Shuttle</a></li>
+<li>Website - <a href="https://dioxuslabs.com/" target="_blank">Dioxus</a></li>
+</ul>
+<h2 id="the-idea">
+  The Idea
+  <a class="heading-link" href="#the-idea">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Let&rsquo;s start where every side project starts, the idea.
+Every good idea for a side project begins with something the developer is passionate about.
+For me, it was Pokémon, but I&rsquo;ve had too many side projects based on that idea, so I went with the next best thing, Digimon.</p>
+<p>I found a dataset for the Cyber Sleuth games and decided to build a web app around it.
+The app would allow users to search for Digimon, view their stats.
+Note, this makes v1 a read only app, but we&rsquo;ll add more features in the future.</p>
+<h2 id="the-server">
+  The Server
+  <a class="heading-link" href="#the-server">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Author note: I&rsquo;m developing against Pavex 0.1.25 here.</p>
+<p>The server is built using Pavex, an opinionated web framework for Rust.
+The <em>core</em> idea behind Pavex as I understand it is to make it easy to build web apps in Rust.
+Luca, in his <a href="https://www.youtube.com/watch?v=cMea6IMRk2s" target="_blank">Rust Nation UK talk</a> even mentions <!-- raw HTML omitted --></p>
+<p>We&rsquo;ll start with the pavex CLI to create a new project.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># make sure pavex is installed: https://pavex.dev/docs/getting_started/</span>
+</span></span><span style="display:flex;"><span>pavex new cyber-sleuth
+</span></span></code></pre></div><p>This will create a new project with 3 key directories; app, server, server_sdk.</p>
+<p>The app directory is where we&rsquo;ll spend most of our time developing the api.
+The server directory is where we&rsquo;ll do our dependency injection and is the main entry point for the server.
+The server_sdk directory is autogenerated code based on the app.</p>
+<p>I would <em>heavily</em> recommend watching Luca&rsquo;s talk, as it goes into more detail about the architecture of Pavex.
+After that, read the documentation, it&rsquo;s really well written.
+We&rsquo;re not going to dive into the specifics of Pavex in this post, but we&rsquo;ll cover how to create a new endpoint and hook it up with Diesel.</p>
+<p>Ideally we want 2 endpoints, one to list Digimon (including query parameters to filter them) and one to get a single Digimon by name.</p>
+<p>First, let&rsquo;s create a few endpoints to achieve this.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">register</span>(bp: <span style="color:#79c0ff">&amp;</span><span style="color:#f0883e;font-weight:bold">mut</span><span style="color:#6e7681"> </span>Blueprint)<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>bp.nest_at(<span style="color:#a5d6ff">&#34;/api&#34;</span>,<span style="color:#6e7681"> </span>blueprint());<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">blueprint</span>()<span style="color:#6e7681"> </span>-&gt; <span style="color:#f0883e;font-weight:bold">Blueprint</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">let</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>bp<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span>Blueprint::new();<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>PathParams::register(<span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>bp);<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>QueryParams::register(<span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>bp);<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>bp.request_scoped(f!(self::Digimon::new));<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>bp.route(<span style="color:#79c0ff;font-weight:bold">GET</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">&#34;/digimon&#34;</span>,<span style="color:#6e7681"> </span>f!(self::Digimon::search))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>.error_handler(f!(self::SearchError::into_response));<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>bp.route(<span style="color:#79c0ff;font-weight:bold">GET</span>,<span style="color:#6e7681"> </span><span style="color:#a5d6ff">&#34;/digimon/:name&#34;</span>,<span style="color:#6e7681"> </span>f!(self::Digimon::get))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>.error_handler(f!(self::GetError::into_response));<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>bp<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>This code registers the endpoints for the Digimon API.
+It nests them into <code>/api/</code> and registers the path and query default constructors.
+The <code>search</code> and <code>get</code> functions are where we&rsquo;ll do the heavy lifting.</p>
+<p>We&rsquo;ll also define a Digimon struct (this will hold our database connection, and possibly other things later).</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">struct</span> <span style="color:#f0883e;font-weight:bold">Digimon</span><span style="color:#6e7681"> </span>{}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>We&rsquo;ll also implement the Default trait, a <code>new</code> function to initialise the struct, and the <code>search</code> and <code>get</code> functions.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">impl</span><span style="color:#6e7681"> </span>Default<span style="color:#6e7681"> </span><span style="color:#ff7b72">for</span><span style="color:#6e7681"> </span>Digimon<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">default</span>()<span style="color:#6e7681"> </span>-&gt; <span style="color:#f0883e;font-weight:bold">Self</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>Self::new()<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">impl</span><span style="color:#6e7681"> </span>Digimon<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">new</span>()<span style="color:#6e7681"> </span>-&gt; <span style="color:#f0883e;font-weight:bold">Self</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>Self<span style="color:#6e7681"> </span>{}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">get</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>self,<span style="color:#6e7681"> </span>params: <span style="color:#79c0ff">&amp;</span><span style="color:#f0883e;font-weight:bold">PathParams</span><span style="color:#ff7b72;font-weight:bold">&lt;</span>GetDigimonParams<span style="color:#ff7b72;font-weight:bold">&gt;</span>)<span style="color:#6e7681"> </span>-&gt; Result<span style="color:#ff7b72;font-weight:bold">&lt;</span>Response,<span style="color:#6e7681"> </span>GetError<span style="color:#ff7b72;font-weight:bold">&gt;</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>Ok(Response::new(StatusCode::<span style="color:#79c0ff;font-weight:bold">OK</span>))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">search</span>(<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>self,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>params: <span style="color:#79c0ff">&amp;</span><span style="color:#f0883e;font-weight:bold">QueryParams</span><span style="color:#ff7b72;font-weight:bold">&lt;</span>SearchDigimonParams<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>)<span style="color:#6e7681"> </span>-&gt; Result<span style="color:#ff7b72;font-weight:bold">&lt;</span>Response,<span style="color:#6e7681"> </span>SearchError<span style="color:#ff7b72;font-weight:bold">&gt;</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>Ok(Response::new(StatusCode::<span style="color:#79c0ff;font-weight:bold">OK</span>))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>For now we&rsquo;re just returning a 200 status code, but we&rsquo;ll hook this up with Diesel in a bit.
+You&rsquo;ll also notice we&rsquo;re using the <code>SearchDigimonParams</code> and <code>GetDigimonParams</code> structs, so let&rsquo;s go ahead and define those.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[PathParams]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">struct</span> <span style="color:#f0883e;font-weight:bold">GetDigimonParams</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>name: String,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[derive(serde::Deserialize, Debug)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">struct</span> <span style="color:#f0883e;font-weight:bold">SearchDigimonParams</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>stage: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span>String<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[serde(rename = </span><span style="color:#a5d6ff">&#34;type&#34;</span><span style="color:#8b949e;font-weight:bold;font-style:italic">)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>type_: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span>String<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>attribute: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span>String<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>memory: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span><span style="color:#ff7b72">i64</span><span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>equip_slots: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span><span style="color:#ff7b72">i64</span><span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>The <code>GetDigimonParams</code> struct is used to get the name of the Digimon from the path parameters.
+For those with a curious mind, try changing the route declaration from earlier from <code>/digimon/:name</code> to <code>/digimon/:digimon_name</code> and see what happens.
+Pavex does a great job of catching runtime errors earlier on.</p>
+<p>The <code>SearchDigimonParams</code> struct is used to get the query parameters from the request.</p>
+<p>Next up we need to define some errors for what could go wrong.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[derive(thiserror::Error, Debug)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">enum</span> <span style="color:#f0883e;font-weight:bold">GetError</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[error(</span><span style="color:#a5d6ff">&#34;Digimon not found.&#34;</span><span style="color:#8b949e;font-weight:bold;font-style:italic">)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>NotFound,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[error(</span><span style="color:#a5d6ff">&#34;Something went wrong. Please retry later.&#34;</span><span style="color:#8b949e;font-weight:bold;font-style:italic">)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>UnexpectedError(<span style="color:#8b949e;font-weight:bold;font-style:italic">#[source]</span><span style="color:#6e7681"> </span>anyhow::Error),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">impl</span><span style="color:#6e7681"> </span>GetError<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">into_response</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>self)<span style="color:#6e7681"> </span>-&gt; <span style="color:#f0883e;font-weight:bold">Response</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">match</span><span style="color:#6e7681"> </span>self<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>GetError::NotFound<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=&gt;</span><span style="color:#6e7681"> </span>Response::not_found(),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>GetError::UnexpectedError(_)<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=&gt;</span><span style="color:#6e7681"> </span>Response::internal_server_error(),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>.set_typed_body(format!(<span style="color:#a5d6ff">&#34;</span><span style="color:#a5d6ff">{self}</span><span style="color:#a5d6ff">&#34;</span>))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[derive(thiserror::Error, Debug)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">enum</span> <span style="color:#f0883e;font-weight:bold">SearchError</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[error(</span><span style="color:#a5d6ff">&#34;Something went wrong. Please retry later.&#34;</span><span style="color:#8b949e;font-weight:bold;font-style:italic">)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>UnexpectedError(<span style="color:#8b949e;font-weight:bold;font-style:italic">#[source]</span><span style="color:#6e7681"> </span>anyhow::Error),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">impl</span><span style="color:#6e7681"> </span>SearchError<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">into_response</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>self)<span style="color:#6e7681"> </span>-&gt; <span style="color:#f0883e;font-weight:bold">Response</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">match</span><span style="color:#6e7681"> </span>self<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>SearchError::UnexpectedError(_)<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=&gt;</span><span style="color:#6e7681"> </span>Response::internal_server_error(),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>.set_typed_body(format!(<span style="color:#a5d6ff">&#34;</span><span style="color:#a5d6ff">{self}</span><span style="color:#a5d6ff">&#34;</span>))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>I&rsquo;ll be honest, not a great deal of care has gone into this section, but you can still see just how powerful the error handling is in Pavex.
+Look at the <code>GetError</code> enum, and see how we&rsquo;re handling 404 differently from 500 to get an idea.</p>
+<p>That whirlwind tour of Pavex is over, let&rsquo;s move onto Diesel.</p>
+<h2 id="the-database">
+  The Database
+  <a class="heading-link" href="#the-database">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Author note: I&rsquo;m developing against Diesel 2.1.5 here.</p>
+<p>Follow the <a href="https://diesel.rs/guides/getting-started" target="_blank">quick start guide for Diesel</a> - I won&rsquo;t repeat it here, so please go read it.</p>
+<p>I hate ORMs (I come from Go, where they&rsquo;re typically frowned upon).
+Diesel was pretty fun (provided you&rsquo;re not using MySql 8.3 on a mac).</p>
+<p>First choice is what database we want, I opted (eventually) for something super simple (sqlite) as it can, and in this blog does, run in memory.
+We&rsquo;ll need to add the Diesel dependencies to our Cargo.toml.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[dependencies]
+</span></span><span style="display:flex;"><span>diesel = { version = <span style="color:#a5d6ff">&#34;2.1.5&#34;</span>, features = [<span style="color:#a5d6ff">&#34;sqlite&#34;</span>] }
+</span></span><span style="display:flex;"><span>diesel_migrations = { version = <span style="color:#a5d6ff">&#34;2.1.0&#34;</span>, features = [<span style="color:#a5d6ff">&#34;sqlite&#34;</span>] }
+</span></span></code></pre></div><p>With that out of the way, we can start defining our migrations.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#ff7b72">CREATE</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">TABLE</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">`</span>digimon<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>(<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72;font-weight:bold">`</span>Name<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>VARCHAR(<span style="color:#a5d6ff">1024</span>),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72;font-weight:bold">`</span>Stage<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>VARCHAR(<span style="color:#a5d6ff">1024</span>),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#ff7b72">Type</span><span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>VARCHAR(<span style="color:#a5d6ff">1024</span>),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72;font-weight:bold">`</span>Attribute<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>VARCHAR(<span style="color:#a5d6ff">1024</span>),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72;font-weight:bold">`</span>Memory<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>BIGINT,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72;font-weight:bold">`</span>Equip<span style="color:#6e7681"> </span>Slots<span style="color:#ff7b72;font-weight:bold">`</span><span style="color:#6e7681"> </span>BIGINT,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#8b949e;font-style:italic">-- other columns like HP, SP, ATK, DEF, INT, SPD at various levels go here
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">PRIMARY</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">KEY</span><span style="color:#6e7681"> </span>(<span style="color:#ff7b72;font-weight:bold">`</span>Name<span style="color:#ff7b72;font-weight:bold">`</span>)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>);<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>With that all out of the way you&rsquo;ll be able to generate a <code>schema.rs</code> file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>diesel migration run
+</span></span></code></pre></div><p>Next up we need to create a <code>models.rs</code> file. This will define the queries we want to make, so it may have fields from multiple tables (obviously here we just have the one).</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">use</span><span style="color:#6e7681"> </span>diesel::prelude::<span style="color:#ff7b72;font-weight:bold">*</span>;<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[derive(serde::Serialize, Queryable, Selectable)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[diesel(table_name = crate::schema::digimon)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[diesel(check_for_backend(diesel::sqlite::Sqlite))]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#8b949e;font-weight:bold;font-style:italic">#[allow(non_snake_case)]</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">struct</span> <span style="color:#f0883e;font-weight:bold">Digimon</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>Name: String,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>Stage: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span>String<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>Type: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span>String<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>Attribute: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span>String<span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>Memory: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span><span style="color:#ff7b72">i64</span><span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span>Equip_Slots: Option<span style="color:#ff7b72;font-weight:bold">&lt;</span><span style="color:#ff7b72">i64</span><span style="color:#ff7b72;font-weight:bold">&gt;</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#8b949e;font-style:italic">// other fields like HP, SP, ATK, DEF, INT, SPD at various levels go here too
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>In our <code>lib.rs</code> just make sure the models and schema file are included.</p>
+<p>So, back to our <code>Digimon</code> struct in the <code>routes.rs</code> file, we can include the database connection</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">struct</span> <span style="color:#f0883e;font-weight:bold">Digimon</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>conn: <span style="color:#f0883e;font-weight:bold">SqliteConnection</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>And in the <code>new</code> function, we can initialise the connection.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">impl</span><span style="color:#6e7681"> </span>Digimon<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">new</span>()<span style="color:#6e7681"> </span>-&gt; <span style="color:#f0883e;font-weight:bold">Self</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">let</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>conn<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span>SqliteConnection::establish(<span style="color:#a5d6ff">&#34;:memory:&#34;</span>).unwrap();<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>conn.run_pending_migrations(<span style="color:#79c0ff;font-weight:bold">MIGRATIONS</span>).unwrap();<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>Self<span style="color:#6e7681"> </span>{<span style="color:#6e7681"> </span>conn<span style="color:#6e7681"> </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>We can now use this connection in the <code>search</code> and <code>get</code> functions, we&rsquo;ll leave the search function as an excerise for the reader, but here&rsquo;s the <code>get</code> function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#ff7b72">impl</span><span style="color:#6e7681"> </span>Digimon<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span><span style="color:#ff7b72">pub</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">fn</span> <span style="color:#d2a8ff;font-weight:bold">get</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>self,<span style="color:#6e7681"> </span>params: <span style="color:#79c0ff">&amp;</span><span style="color:#f0883e;font-weight:bold">PathParams</span><span style="color:#ff7b72;font-weight:bold">&lt;</span>GetDigimonParams<span style="color:#ff7b72;font-weight:bold">&gt;</span>)<span style="color:#6e7681"> </span>-&gt; Result<span style="color:#ff7b72;font-weight:bold">&lt;</span>Response,<span style="color:#6e7681"> </span>GetError<span style="color:#ff7b72;font-weight:bold">&gt;</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">use</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">super</span>::schema::digimon::dsl::<span style="color:#ff7b72;font-weight:bold">*</span>;<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">let</span><span style="color:#6e7681"> </span>res<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span>digimon<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>.filter(Name.eq(params.<span style="color:#a5d6ff">0.</span>name.as_str()))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>.first::<span style="color:#ff7b72;font-weight:bold">&lt;</span><span style="color:#ff7b72">super</span>::models::Digimon<span style="color:#ff7b72;font-weight:bold">&gt;</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span><span style="color:#ff7b72">mut</span><span style="color:#6e7681"> </span>self.conn)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>.optional()<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>.unwrap();<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span><span style="color:#ff7b72">let</span><span style="color:#6e7681"> </span>res<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">match</span><span style="color:#6e7681"> </span>res<span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>Some(res)<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=&gt;</span><span style="color:#6e7681"> </span>Json::new(res)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">                </span>.map_err(Into::into)<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">                </span>.map_err(GetError::UnexpectedError)<span style="color:#ff7b72;font-weight:bold">?</span>,<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">            </span>None<span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">=&gt;</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">return</span><span style="color:#6e7681"> </span>Err(GetError::NotFound),<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>};<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">        </span>Ok(Response::new(StatusCode::<span style="color:#79c0ff;font-weight:bold">OK</span>).set_typed_body(res))<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">    </span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>Note from earlier the error handling on the <code>match res</code> block, this is where we&rsquo;re handling the 404 error.</p>
+<h2 id="part-1-conclusion">
+  Part 1 Conclusion
+  <a class="heading-link" href="#part-1-conclusion">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>We&rsquo;ve covered a lot in this post, but we&rsquo;ve only just scratched the surface.
+In the next post, we&rsquo;ll cover how to deploy this app using Shuttle, and maybe how to add a front end part using Dioxus (though maybe that&rsquo;s part 3?).</p>
+<p>For now, let&rsquo;s look at how to run this code locally.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cargo px run
+</span></span></code></pre></div><p>In a new terminal, run the following curl command.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl http://localhost:8080/api/digimon/Agumon
+</span></span><span style="display:flex;"><span>curl <span style="color:#a5d6ff">&#34;http://localhost:8080/api/digimon?stage=Rookie&amp;type=Vaccine&#34;</span>
+</span></span></code></pre></div><p>Hopefully that works.</p>
+<p>Overall, Pavex was a great experience, Diesel was pretty good if I ignore my time with MySql.</p>
+<p>I hope you enjoyed this post, and I&rsquo;ll see you in the next one.</p>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+</div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Alexander Jophus 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+    </main>
+
+      
+    <script src="/js/coder.js"></script>
+       
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>            
+    
+</body>
+</html>

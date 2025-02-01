@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+  ADDING MIDDLEWARE TO A gRPC GO SERVICE · Alexander Jophus
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="Alexander Jophus">
+<meta name="description" content="WARNING: This space is moving very fast, I&rsquo;ll try to keep this project/blog up to date.
+
+  Intro
+  
+    
+    Link to heading
+  
+
+Let&rsquo;s start by asking some questions about our service;
+
+What was the error that caused a failure?
+What percentage of calls are successful?
+Where did our service spend most of its time/what can we optimise?
+
+Deploying a service without any logging/metrics/traces is going to cause frustration when answering these questions.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ADDING MIDDLEWARE TO A gRPC GO SERVICE">
+  <meta name="twitter:description" content="WARNING: This space is moving very fast, I’ll try to keep this project/blog up to date.
+Intro Link to heading Let’s start by asking some questions about our service;
+What was the error that caused a failure? What percentage of calls are successful? Where did our service spend most of its time/what can we optimise? Deploying a service without any logging/metrics/traces is going to cause frustration when answering these questions.">
+
+<meta property="og:url" content="//localhost:1313/posts/middleware/">
+  <meta property="og:site_name" content="Alexander Jophus">
+  <meta property="og:title" content="ADDING MIDDLEWARE TO A gRPC GO SERVICE">
+  <meta property="og:description" content="WARNING: This space is moving very fast, I’ll try to keep this project/blog up to date.
+Intro Link to heading Let’s start by asking some questions about our service;
+What was the error that caused a failure? What percentage of calls are successful? Where did our service spend most of its time/what can we optimise? Deploying a service without any logging/metrics/traces is going to cause frustration when answering these questions.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2021-11-14T11:17:51+00:00">
+    <meta property="article:modified_time" content="2021-11-14T11:17:51+00:00">
+    <meta property="article:tag" content="Iris">
+
+
+
+
+<link rel="canonical" href="//localhost:1313/posts/middleware/">
+
+
+<link
+  rel="preload"
+  href="/fonts/forkawesome-webfont.woff2?v=1.2.0"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+  
+<link rel="stylesheet" href="/css/coder.css" media="screen" />
+ 
+
+
+
+
+
+ 
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>
+
+  </head>
+
+   
+
+  <body
+    class="preload-transitions colorscheme-light"
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="//localhost:1313/">
+      Alexander Jophus
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/sl/">SL</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="https://pokedex.alexanderjophus.dev">Pokédex</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="//localhost:1313/posts/middleware/">
+              ADDING MIDDLEWARE TO A gRPC GO SERVICE
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2021-11-14T11:17:51Z">
+                November 14, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              5-minute read
+            </span>
+          </div>
+          
+          
+          <div class="tags">
+  <i class="fa fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/tags/iris/">Iris</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p>WARNING: This space is moving very fast, I&rsquo;ll try to keep this project/blog up to date.</p>
+<h2 id="intro">
+  Intro
+  <a class="heading-link" href="#intro">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Let&rsquo;s start by asking some questions about our service;</p>
+<ul>
+<li>What was the error that caused a failure?</li>
+<li>What percentage of calls are successful?</li>
+<li>Where did our service spend most of its time/what can we optimise?</li>
+</ul>
+<p>Deploying a service without any logging/metrics/traces is going to cause frustration when answering these questions.</p>
+<p>What&rsquo;s the best way to answer these questions?</p>
+<p>Middleware.
+With middleware we can essentially slot a piece of code <em>between</em> when the call comes in to the service and when the function handling the call actually runs.
+You could say, it runs in the middle.</p>
+<h2 id="the-middleware-ecosystem">
+  The middleware ecosystem
+  <a class="heading-link" href="#the-middleware-ecosystem">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Introducing the <a href="https://github.com/grpc-ecosystem" target="_blank">middleware ecosystem</a>, in particular for our usecase the <a href="https://github.com/grpc-ecosystem/go-grpc-middleware" target="_blank">go libraries</a>.
+This library comes with an incredible bit of functionality.
+The first thing to note is the <a href="https://pkg.go.dev/github.com/grpc-ecosystem/go-grpc-middleware#hdr-Chaining" target="_blank">chaining</a> pattern.
+This allows the user to plug together multiple gRPC calls, in any order they wish (here be dragons though, we&rsquo;ll get to that).</p>
+<p>With these building blocks, we can create a series of middleware that will first log our request, then add to our metrics provider, then our tracing provider and lastly ensure that we recover from panics correctly so our service stays alive.</p>
+<p>Let&rsquo;s do it!</p>
+<h2 id="instrumenting-our-service">
+  Instrumenting our service
+  <a class="heading-link" href="#instrumenting-our-service">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>I&rsquo;m going to pick the <a href="https://github.com/alexanderjophus/iris-classification" target="_blank">iris classifier service</a>.
+For a basic run down, it&rsquo;s a service with an embedded ML model, a request comes in with iris sepal/petal width/length and the service predicts what type of iris it is.
+If that sounds interesting, check the <a href="https://alexanderjophus.github.io/tags/iris/" target="_blank">blog</a>.</p>
+<h3 id="logging">
+  Logging
+  <a class="heading-link" href="#logging">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>Let&rsquo;s take a look at the options of <a href="https://pkg.go.dev/github.com/grpc-ecosystem/go-grpc-middleware#readme-logging" target="_blank">logging frameworks</a> we can use.
+Our options are essentially <a href="https://github.com/uber-go/zap" target="_blank">zap</a> or <a href="https://github.com/sirupsen/logrus" target="_blank">logrus</a>.
+We&rsquo;re going to arbitrarily pick zap for now, mainly because I more familiarity with it.
+One day we may explore logging packages in the Go ecosystem.</p>
+<p>With that in mind, we need to make a zap logger and pass it into the middleware func.
+Let&rsquo;s take a look at how we can do that.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>zapLogger, err <span style="color:#ff7b72;font-weight:bold">:=</span> zap.<span style="color:#d2a8ff;font-weight:bold">NewProduction</span>()
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">defer</span> zapLogger.<span style="color:#d2a8ff;font-weight:bold">Sync</span>()
+</span></span></code></pre></div><p>Zap heavily uses the <a href="https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis" target="_blank">options pattern</a>.
+They also take it further by creating some sensible default loggers that you can then build on top of.
+For this we just need to use the <code>NewProduction()</code>, but I would heavily suggest reading the <a href="https://pkg.go.dev/go.uber.org/zap" target="_blank">docs</a> before taking it to production.</p>
+<h3 id="metrics">
+  Metrics
+  <a class="heading-link" href="#metrics">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>This is where the space gets moving fast, it used to be the case that you should just use a prometheus exporter and be done with it.
+Recently <a href="https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md" target="_blank">OpenMetrics</a> has become a foundation that aims to standardise metrics.
+For now, we&rsquo;ll just use the prometheus exporter, there&rsquo;s no need to initialise anything for this.</p>
+<h2 id="tracing">
+  Tracing
+  <a class="heading-link" href="#tracing">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>I&rsquo;d recommend this blog where Stephen Watts explains <a href="https://www.bmc.com/blogs/opentracing-opencensus-openmetrics/" target="_blank">the differences between opentracing projects</a>.
+From what I understand opentracing and opencensus were two foundations aiming at standardising tracing, thankfully they combined into one standard <code>OpenTelemetry</code>.</p>
+<p>What does that mean for us?
+We&rsquo;re able (in theory) to swap our tracing provider between projects like <a href="https://github.com/openzipkin/zipkin-go" target="_blank">zipkin</a> and <a href="https://github.com/jaegertracing/jaeger-client-go" target="_blank">jaeger</a>.</p>
+<p>We&rsquo;re going to use jaeger, because as with logging that&rsquo;s what I&rsquo;m more familiar with.
+We can set up jaegertracing here like this.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>cfg <span style="color:#ff7b72;font-weight:bold">:=</span> jaegercfg.Configuration{
+</span></span><span style="display:flex;"><span>    ServiceName: serviceName,
+</span></span><span style="display:flex;"><span>    Sampler: <span style="color:#ff7b72;font-weight:bold">&amp;</span>jaegercfg.SamplerConfig{
+</span></span><span style="display:flex;"><span>        Type:  jaeger.SamplerTypeConst,
+</span></span><span style="display:flex;"><span>        Param: <span style="color:#a5d6ff">1</span>,
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    Reporter: <span style="color:#ff7b72;font-weight:bold">&amp;</span>jaegercfg.ReporterConfig{
+</span></span><span style="display:flex;"><span>        LogSpans: <span style="color:#79c0ff">true</span>,
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>tracer, closer, err <span style="color:#ff7b72;font-weight:bold">:=</span> cfg.<span style="color:#d2a8ff;font-weight:bold">NewTracer</span>()
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">defer</span> closer.<span style="color:#d2a8ff;font-weight:bold">Close</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// Set the singleton opentracing.Tracer with the Jaeger tracer.
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>opentracing.<span style="color:#d2a8ff;font-weight:bold">SetGlobalTracer</span>(tracer)
+</span></span></code></pre></div><p>This also allows use to use tracing for more specific parts of our service if needed.</p>
+<h3 id="putting-it-together">
+  Putting it together
+  <a class="heading-link" href="#putting-it-together">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>We&rsquo;ll create a middlewares variable that is a chain of our tracing, metrics, logging, and a recovery middleware like so.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>middlewares <span style="color:#ff7b72;font-weight:bold">:=</span> grpc.<span style="color:#d2a8ff;font-weight:bold">UnaryInterceptor</span>(grpc_middleware.<span style="color:#d2a8ff;font-weight:bold">ChainUnaryServer</span>(
+</span></span><span style="display:flex;"><span>    grpc_opentracing.<span style="color:#d2a8ff;font-weight:bold">UnaryServerInterceptor</span>(grpc_opentracing.<span style="color:#d2a8ff;font-weight:bold">WithTracer</span>(tracer)),
+</span></span><span style="display:flex;"><span>    grpc_prometheus.UnaryServerInterceptor,
+</span></span><span style="display:flex;"><span>    grpc_zap.<span style="color:#d2a8ff;font-weight:bold">UnaryServerInterceptor</span>(zapLogger),
+</span></span><span style="display:flex;"><span>    grpc_recovery.<span style="color:#d2a8ff;font-weight:bold">UnaryServerInterceptor</span>(),
+</span></span><span style="display:flex;"><span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>grpcS <span style="color:#ff7b72;font-weight:bold">:=</span> grpc.<span style="color:#d2a8ff;font-weight:bold">NewServer</span>(middlewares)
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">defer</span> grpcS.<span style="color:#d2a8ff;font-weight:bold">GracefulStop</span>()
+</span></span></code></pre></div><p>There is the consideration of the order of the middlewares, does it matter? Yes. Why?
+Let&rsquo;s take a look at a middleware func as an example to see how it works and why the order is important.</p>
+<p>This is the zap logger middleware</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// UnaryServerInterceptor returns a new unary server interceptors that adds zap.Logger to the context.
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">UnaryServerInterceptor</span>(logger <span style="color:#ff7b72;font-weight:bold">*</span>zap.Logger, opts <span style="color:#ff7b72;font-weight:bold">...</span>Option) grpc.UnaryServerInterceptor {
+</span></span><span style="display:flex;"><span>	o <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#d2a8ff;font-weight:bold">evaluateServerOpt</span>(opts)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">return</span> <span style="color:#ff7b72">func</span>(ctx context.Context, req <span style="color:#ff7b72">interface</span>{}, info <span style="color:#ff7b72;font-weight:bold">*</span>grpc.UnaryServerInfo, handler grpc.UnaryHandler) (<span style="color:#ff7b72">interface</span>{}, <span style="color:#ff7b72">error</span>) {
+</span></span><span style="display:flex;"><span>		startTime <span style="color:#ff7b72;font-weight:bold">:=</span> time.<span style="color:#d2a8ff;font-weight:bold">Now</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		newCtx <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#d2a8ff;font-weight:bold">newLoggerForCall</span>(ctx, logger, info.FullMethod, startTime, o.timestampFormat)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		resp, err <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#d2a8ff;font-weight:bold">handler</span>(newCtx, req)
+</span></span><span style="display:flex;"><span>		<span style="color:#ff7b72">if</span> !o.<span style="color:#d2a8ff;font-weight:bold">shouldLog</span>(info.FullMethod, err) {
+</span></span><span style="display:flex;"><span>			<span style="color:#ff7b72">return</span> resp, err
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		code <span style="color:#ff7b72;font-weight:bold">:=</span> o.<span style="color:#d2a8ff;font-weight:bold">codeFunc</span>(err)
+</span></span><span style="display:flex;"><span>		level <span style="color:#ff7b72;font-weight:bold">:=</span> o.<span style="color:#d2a8ff;font-weight:bold">levelFunc</span>(code)
+</span></span><span style="display:flex;"><span>		duration <span style="color:#ff7b72;font-weight:bold">:=</span> o.<span style="color:#d2a8ff;font-weight:bold">durationFunc</span>(time.<span style="color:#d2a8ff;font-weight:bold">Since</span>(startTime))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		o.<span style="color:#d2a8ff;font-weight:bold">messageFunc</span>(newCtx, <span style="color:#a5d6ff">&#34;finished unary call with code &#34;</span><span style="color:#ff7b72;font-weight:bold">+</span>code.<span style="color:#d2a8ff;font-weight:bold">String</span>(), level, code, err, duration)
+</span></span><span style="display:flex;"><span>		<span style="color:#ff7b72">return</span> resp, err
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The first thing to notice is that it takes a logger and options, and returns a function.
+For more information on <a href="https://gobyexample.com/closures" target="_blank">Go closures</a>, try the gobyexamples resource.
+We&rsquo;re mainly looking at the function that is being returned though and how it works.</p>
+<p>In the middle of the function we call <code>handler</code>, this is our call to the next middleware in the stack (or the actual server functionality itself).
+The function also returns a response and err object to the parent middleware (or caller if it&rsquo;s the last in the stack).</p>
+<p>The other bits of information are around the log itself, such as figuring out timing of the call, response code, and log level.</p>
+<h3 id="running-our-application">
+  Running our application
+  <a class="heading-link" href="#running-our-application">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>First lets run our tracing service, then we&rsquo;ll run our Go service.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>docker run -d --name jaeger <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -e <span style="color:#79c0ff">COLLECTOR_ZIPKIN_HOST_PORT</span><span style="color:#ff7b72;font-weight:bold">=</span>:9411 <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 5775:5775/udp <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 6831:6831/udp <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 6832:6832/udp <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 5778:5778 <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 16686:16686 <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 14268:14268 <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 14250:14250 <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        -p 9411:9411 <span style="color:#79c0ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#79c0ff"></span>        jaegertracing/all-in-one:1.28
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>go run svc/main.go
+</span></span></code></pre></div><p>You should be able to navigate to <code>http://localhost:2112/metrics</code>, to see your metrics via the Go service, and <code>http://localhost:16686</code> to access the jaeger tracing UI.
+Make a request through <a href="https://github.com/ktr0731/evans" target="_blank">evans</a> to <code>Predict</code>, and you should see a log statement on your service.
+You&rsquo;ll also be able to see the trace in the tracing UI, and the metrics updated (if you refresh the page).</p>
+<h3 id="future-steps">
+  Future steps
+  <a class="heading-link" href="#future-steps">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Replace jaeger with opentracing</li>
+<li><input disabled="" type="checkbox"> Add more context to tracing - i.e. use a trace when the service makes the request to the ML model.</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+</div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Alexander Jophus 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+    </main>
+
+      
+    <script src="/js/coder.js"></script>
+       
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>            
+    
+</body>
+</html>

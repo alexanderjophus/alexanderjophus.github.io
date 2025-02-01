@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+  3/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (creating a model) · Alexander Jophus
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="Alexander Jophus">
+<meta name="description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+For the full source code, visit alexanderjophus/iris-classification.
+
+  Intro
+  
+    
+    Link to heading
+  
+
+In this post, we&rsquo;ll learn how to create a model using gorgonia.
+We will be following the iris tutorial mostly, just changing a few bits here and there for our use case.
+We will create the model, and store it in alongside our codebase.
+Lastly, we&rsquo;ll create a small cli tool to ensure we get the results we expected.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="3/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (creating a model)">
+  <meta name="twitter:description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+For the full source code, visit alexanderjophus/iris-classification.
+Intro Link to heading In this post, we’ll learn how to create a model using gorgonia. We will be following the iris tutorial mostly, just changing a few bits here and there for our use case. We will create the model, and store it in alongside our codebase. Lastly, we’ll create a small cli tool to ensure we get the results we expected.">
+
+<meta property="og:url" content="//localhost:1313/posts/ml-grpc-3/">
+  <meta property="og:site_name" content="Alexander Jophus">
+  <meta property="og:title" content="3/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (creating a model)">
+  <meta property="og:description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+For the full source code, visit alexanderjophus/iris-classification.
+Intro Link to heading In this post, we’ll learn how to create a model using gorgonia. We will be following the iris tutorial mostly, just changing a few bits here and there for our use case. We will create the model, and store it in alongside our codebase. Lastly, we’ll create a small cli tool to ensure we get the results we expected.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2021-11-06T10:37:11+01:00">
+    <meta property="article:modified_time" content="2021-11-06T10:37:11+01:00">
+    <meta property="article:tag" content="Iris">
+
+
+
+
+<link rel="canonical" href="//localhost:1313/posts/ml-grpc-3/">
+
+
+<link
+  rel="preload"
+  href="/fonts/forkawesome-webfont.woff2?v=1.2.0"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+  
+<link rel="stylesheet" href="/css/coder.css" media="screen" />
+ 
+
+
+
+
+
+ 
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>
+
+  </head>
+
+   
+
+  <body
+    class="preload-transitions colorscheme-light"
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="//localhost:1313/">
+      Alexander Jophus
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/sl/">SL</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="https://pokedex.alexanderjophus.dev">Pokédex</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="//localhost:1313/posts/ml-grpc-3/">
+              3/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (creating a model)
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2021-11-06T10:37:11&#43;01:00">
+                November 6, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              4-minute read
+            </span>
+          </div>
+          
+          
+          <div class="tags">
+  <i class="fa fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/tags/iris/">Iris</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p>DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.</p>
+<p>For the full source code, visit <a href="https://github.com/alexanderjophus/iris-classification" target="_blank">alexanderjophus/iris-classification</a>.</p>
+<h2 id="intro">
+  Intro
+  <a class="heading-link" href="#intro">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>In this post, we&rsquo;ll learn how to create a model using <a href="https://gorgonia.org/" target="_blank">gorgonia</a>.
+We will be following the <a href="https://gorgonia.org/tutorials/iris/" target="_blank">iris tutorial</a> mostly, just changing a few bits here and there for our use case.
+We will create the model, and store it in alongside our codebase.
+Lastly, we&rsquo;ll create a small cli tool to ensure we get the results we expected.</p>
+<h2 id="boilerplate-stuff">
+  Boilerplate stuff
+  <a class="heading-link" href="#boilerplate-stuff">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>We&rsquo;ll create our cli application the same way we made our service in part 2 of this post.
+Our run function will differ, but we&rsquo;ll get to that later.</p>
+<h2 id="loading-our-datasets">
+  Loading our datasets
+  <a class="heading-link" href="#loading-our-datasets">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>For this we will use one of my favourite features from <a href="https://go.dev/blog/go1.16" target="_blank">Go 1.16</a>, go:embed.
+We will embed a csv into into our tool, so once we build the binary, we can move it around and the code is guaranteed to work.</p>
+<p>Grab the csv you want and drop it into a <code>models</code> directory.
+For a project this size it&rsquo;s best to keep it in the same package until patterns start to form, but to make the tutorial/blog as clear as possible I&rsquo;ve separated it.
+In this directory, we&rsquo;ll also want to have a go file that embeds the csv, allowing other packages to read data from our datasets.
+Let&rsquo;s take a look how this works.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">package</span> datasets
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;embed&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">//go:embed *.csv
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">var</span> Data embed.FS
+</span></span></code></pre></div><p>Done.
+That&rsquo;s it.
+We define our package as you&rsquo;d expect, after that we import <code>embed</code>, it&rsquo;s important to import <code>embed</code> even if you&rsquo;re embedding strings or []byte.
+The directive is then used above the variable we want to use.
+We wild card the things we want to embed just so we can import multiple datasets if we want to.
+You can and should read more about <a href="https://blog.carlmjohnson.net/post/2021/how-to-use-go-embed/" target="_blank">go:embed</a>, it is incredibly useful.</p>
+<p>With this package, all we need users to do to read a csv file is call <code>datasets.Data.ReadFile(&quot;iris.csv&quot;)</code>, which is pretty neat.</p>
+<h2 id="creating-a-model">
+  Creating a model
+  <a class="heading-link" href="#creating-a-model">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>We&rsquo;re going to copy all the code from <a href="https://github.com/gorgonia/gorgonia/blob/v0.9.17/examples/iris/main.go" target="_blank">gorgonias iris example</a>
+We need to make a few ammendments, first changing <code>func main()</code> to <code>func run(cmd *cobra.Command, args []string)</code>.
+As well as using our new datasets package to read the file.
+The start of the <code>getXYMat()</code> func should look something like this;</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>b, err <span style="color:#ff7b72;font-weight:bold">:=</span> datasets.Data.<span style="color:#d2a8ff;font-weight:bold">ReadFile</span>(<span style="color:#a5d6ff">&#34;iris.csv&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>df <span style="color:#ff7b72;font-weight:bold">:=</span> dataframe.<span style="color:#d2a8ff;font-weight:bold">ReadCSV</span>(bytes.<span style="color:#d2a8ff;font-weight:bold">NewReader</span>(b))
+</span></span></code></pre></div><p>For further reading of this, <a href="https://gorgonia.org/tutorials/iris/" target="_blank">gorgonia released a blog post talking about this</a> in a lot more detail than I can.
+The main take aways for this blog/tutorial is the <code>save</code> func, where we get a <code>theta.bin</code>, which is our model.
+Awesome.</p>
+<p>Our implementation of this section can be found in our repo at <a href="https://github.com/alexanderjophus/iris-classification/tree/main/cmd/train" target="_blank">cmd/train</a>.</p>
+<p>You should be able to run <code>go run cmd/train/main.go</code>, which should print out its progress and leave a model in the root of our repository.
+This should only take a second or so.</p>
+<h2 id="testing-our-model">
+  Testing our model
+  <a class="heading-link" href="#testing-our-model">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>As always, we create use cobra to make a simple cli.
+We also embed our model, using a similar practice earlier.</p>
+<p>Our code looks something like this;</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">run</span>(cmd <span style="color:#ff7b72;font-weight:bold">*</span>cobra.Command, args []<span style="color:#ff7b72">string</span>) {
+</span></span><span style="display:flex;"><span>	b, err <span style="color:#ff7b72;font-weight:bold">:=</span> models.Data.<span style="color:#d2a8ff;font-weight:bold">ReadFile</span>(<span style="color:#a5d6ff">&#34;theta.bin&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>		log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	dec <span style="color:#ff7b72;font-weight:bold">:=</span> gob.<span style="color:#d2a8ff;font-weight:bold">NewDecoder</span>(bytes.<span style="color:#d2a8ff;font-weight:bold">NewReader</span>(b))
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">var</span> thetaT <span style="color:#ff7b72;font-weight:bold">*</span>tensor.Dense
+</span></span><span style="display:flex;"><span>	err = dec.<span style="color:#d2a8ff;font-weight:bold">Decode</span>(<span style="color:#ff7b72;font-weight:bold">&amp;</span>thetaT)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>		log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	g <span style="color:#ff7b72;font-weight:bold">:=</span> gorgonia.<span style="color:#d2a8ff;font-weight:bold">NewGraph</span>()
+</span></span><span style="display:flex;"><span>	theta <span style="color:#ff7b72;font-weight:bold">:=</span> gorgonia.<span style="color:#d2a8ff;font-weight:bold">NodeFromAny</span>(g, thetaT, gorgonia.<span style="color:#d2a8ff;font-weight:bold">WithName</span>(<span style="color:#a5d6ff">&#34;theta&#34;</span>))
+</span></span><span style="display:flex;"><span>	values <span style="color:#ff7b72;font-weight:bold">:=</span> make([]<span style="color:#ff7b72">float64</span>, <span style="color:#a5d6ff">5</span>)
+</span></span><span style="display:flex;"><span>	xT <span style="color:#ff7b72;font-weight:bold">:=</span> tensor.<span style="color:#d2a8ff;font-weight:bold">New</span>(tensor.<span style="color:#d2a8ff;font-weight:bold">WithBacking</span>(values))
+</span></span><span style="display:flex;"><span>	x <span style="color:#ff7b72;font-weight:bold">:=</span> gorgonia.<span style="color:#d2a8ff;font-weight:bold">NodeFromAny</span>(g, xT, gorgonia.<span style="color:#d2a8ff;font-weight:bold">WithName</span>(<span style="color:#a5d6ff">&#34;x&#34;</span>))
+</span></span><span style="display:flex;"><span>	y, err <span style="color:#ff7b72;font-weight:bold">:=</span> gorgonia.<span style="color:#d2a8ff;font-weight:bold">Mul</span>(x, theta)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>		log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	machine <span style="color:#ff7b72;font-weight:bold">:=</span> gorgonia.<span style="color:#d2a8ff;font-weight:bold">NewTapeMachine</span>(g)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">defer</span> machine.<span style="color:#d2a8ff;font-weight:bold">Close</span>()
+</span></span><span style="display:flex;"><span>	values[<span style="color:#a5d6ff">4</span>] = <span style="color:#a5d6ff">1.0</span>
+</span></span><span style="display:flex;"><span>	values[<span style="color:#a5d6ff">0</span>] = <span style="color:#a5d6ff">5.1</span>
+</span></span><span style="display:flex;"><span>	values[<span style="color:#a5d6ff">1</span>] = <span style="color:#a5d6ff">3.5</span>
+</span></span><span style="display:flex;"><span>	values[<span style="color:#a5d6ff">2</span>] = <span style="color:#a5d6ff">1.4</span>
+</span></span><span style="display:flex;"><span>	values[<span style="color:#a5d6ff">3</span>] = <span style="color:#a5d6ff">0.2</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span> err = machine.<span style="color:#d2a8ff;font-weight:bold">RunAll</span>(); err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>		log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">switch</span> math.<span style="color:#d2a8ff;font-weight:bold">Round</span>(y.<span style="color:#d2a8ff;font-weight:bold">Value</span>().<span style="color:#d2a8ff;font-weight:bold">Data</span>().(<span style="color:#ff7b72">float64</span>)) {
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">1</span>:
+</span></span><span style="display:flex;"><span>		fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(<span style="color:#a5d6ff">&#34;setosa&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">2</span>:
+</span></span><span style="display:flex;"><span>		fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(<span style="color:#a5d6ff">&#34;virginica&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">case</span> <span style="color:#a5d6ff">3</span>:
+</span></span><span style="display:flex;"><span>		fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(<span style="color:#a5d6ff">&#34;versicolor&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">default</span>:
+</span></span><span style="display:flex;"><span>		fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(<span style="color:#a5d6ff">&#34;unknown iris&#34;</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	machine.<span style="color:#d2a8ff;font-weight:bold">Reset</span>()
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>What we&rsquo;re interested in mostly are <code>values</code> 0-3, they are what represents the petal/sepal width/length.
+Play about with those numbers and run the code with, you should see the application predicting from the 3 classes of iris.</p>
+<p>Our implementation of this section can be found in our repo at <a href="https://github.com/alexanderjophus/iris-classification/tree/main/cmd/predict" target="_blank">cmd/predict</a>.</p>
+<h1 id="in-summary">
+  In Summary
+  <a class="heading-link" href="#in-summary">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h1>
+<p>We have;</p>
+<ul>
+<li>Created a model</li>
+<li>Tested the model returns reasonable results</li>
+<li>Saved the model</li>
+</ul>
+<p>Next we will;</p>
+<ul>
+<li>Embed the model in our service</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+</div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Alexander Jophus 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+    </main>
+
+      
+    <script src="/js/coder.js"></script>
+       
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>            
+    
+</body>
+</html>

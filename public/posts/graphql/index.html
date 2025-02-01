@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+  MAKING THE JUMP TO GRAPHQL (Formula 1 API) · Alexander Jophus
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="Alexander Jophus">
+<meta name="description" content="To view the final repo browse my github
+
+  Intro
+  
+    
+    Link to heading
+  
+
+Say you have a rest API and for argument sake, it&rsquo;s a very RESTful implementation of a formula 1 API.
+You can get a list of current constructors in the standings, it provides all the information about all the constructors (or bonus points you can specify the constructor you want and retrieve just that one).
+Similarly you can get drivers standings, a list of circuits, and the schedule for a given season.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="MAKING THE JUMP TO GRAPHQL (Formula 1 API)">
+  <meta name="twitter:description" content="To view the final repo browse my github
+Intro Link to heading Say you have a rest API and for argument sake, it’s a very RESTful implementation of a formula 1 API. You can get a list of current constructors in the standings, it provides all the information about all the constructors (or bonus points you can specify the constructor you want and retrieve just that one). Similarly you can get drivers standings, a list of circuits, and the schedule for a given season.">
+
+<meta property="og:url" content="//localhost:1313/posts/graphql/">
+  <meta property="og:site_name" content="Alexander Jophus">
+  <meta property="og:title" content="MAKING THE JUMP TO GRAPHQL (Formula 1 API)">
+  <meta property="og:description" content="To view the final repo browse my github
+Intro Link to heading Say you have a rest API and for argument sake, it’s a very RESTful implementation of a formula 1 API. You can get a list of current constructors in the standings, it provides all the information about all the constructors (or bonus points you can specify the constructor you want and retrieve just that one). Similarly you can get drivers standings, a list of circuits, and the schedule for a given season.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2021-11-28T17:31:17+00:00">
+    <meta property="article:modified_time" content="2021-11-28T17:31:17+00:00">
+
+
+
+
+<link rel="canonical" href="//localhost:1313/posts/graphql/">
+
+
+<link
+  rel="preload"
+  href="/fonts/forkawesome-webfont.woff2?v=1.2.0"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+  
+<link rel="stylesheet" href="/css/coder.css" media="screen" />
+ 
+
+
+
+
+
+ 
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>
+
+  </head>
+
+   
+
+  <body
+    class="preload-transitions colorscheme-light"
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="//localhost:1313/">
+      Alexander Jophus
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/sl/">SL</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="https://pokedex.alexanderjophus.dev">Pokédex</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="//localhost:1313/posts/graphql/">
+              MAKING THE JUMP TO GRAPHQL (Formula 1 API)
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2021-11-28T17:31:17Z">
+                November 28, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              4-minute read
+            </span>
+          </div>
+          
+          
+          
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p>To view the final repo browse my <a href="https://github.com/alexanderjophus/formula1" target="_blank">github</a></p>
+<h2 id="intro">
+  Intro
+  <a class="heading-link" href="#intro">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Say you have a rest API and for argument sake, it&rsquo;s a very RESTful implementation of a formula 1 API.
+You can get a list of current constructors in the standings, it provides all the information about all the constructors (or bonus points you can specify the constructor you want and retrieve just that one).
+Similarly you can get drivers standings, a list of circuits, and the schedule for a given season.</p>
+<p>Your front ends may want to mix and match this data as they see fit.
+The problem here is that they may underfetch or overfetch data.
+By this we mean they use the API and retrieve less information than they need, or more information than they need.
+That doesn&rsquo;t sound too bad, until you consider mobile data, sketchy internet connections, or just the sheer amount of data available.</p>
+<p>How do we stop someone underfetching or overfetching data?
+Have them declaritively state what information they need.</p>
+<p>If they just need the top three of the drivers standings, and of those drivers just the driver code, have them state that and return just that.</p>
+<h2 id="getting-started-with-graphql-in-go">
+  Getting Started with GraphQL in Go
+  <a class="heading-link" href="#getting-started-with-graphql-in-go">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>There are a few different ways to get started with graphql in Go, for a fuller picture see this <a href="https://gqlgen.com/feature-comparison/" target="_blank">comparison chart</a>.
+Personally I&rsquo;d recommend <a href="https://github.com/99designs/gqlgen" target="_blank">gqlgen</a>, it&rsquo;s feature complete and works like a charm.</p>
+<p>The first thing we want to do is follow the <a href="https://github.com/99designs/gqlgen#quick-start" target="_blank">quickstart guide</a>.
+Following this, we import gqlgen into our project.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>printf <span style="color:#a5d6ff">&#39;// +build tools\npackage tools\nimport _ &#34;github.com/99designs/gqlgen&#34;&#39;</span> | gofmt &gt; tools.go
+</span></span><span style="display:flex;"><span>go mod tidy
+</span></span></code></pre></div><p>What the above snippet does is include an import to gqlgen in a <code>tools.go</code> file.
+We can then run a command to initialise a &lsquo;hello world&rsquo; style project.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>go run github.com/99designs/gqlgen init
+</span></span></code></pre></div><p>Lastly we can run our API and visit <code>http://localhost:8080/</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>go run server.go
+</span></span></code></pre></div><h2 id="expanding-our-graphql-api">
+  Expanding our GraphQL API
+  <a class="heading-link" href="#expanding-our-graphql-api">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>The first thing we&rsquo;re going to do is throw out the generated <code>schema.graphqls</code> file and rewrite our own.
+We&rsquo;re going to create a query like below, which is to say we&rsquo;re going to create a <code>Query</code> called <code>ConstructorStandings</code>, which takes in a <code>StandingsFilter</code> which has default values for <code>year</code> and <code>top</code>, and it will return a <code>ConstructorStandingsReport</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-graphql" data-lang="graphql"><span style="display:flex;"><span><span style="color:#ff7b72">type</span><span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">Query</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">ConstructorStandings</span>(<span style="color:#79c0ff">filter</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">StandingsFilter</span><span style="color:#6e7681"> </span>=<span style="color:#6e7681"> </span>{<span style="color:#79c0ff">year</span>:<span style="color:#6e7681"> </span><span style="color:#a5d6ff">&#34;current&#34;</span>,<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">top</span>:<span style="color:#6e7681"> </span><span style="color:#f85149">-</span><span style="color:#f0883e;font-weight:bold">1</span>}):<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">ConstructorStandingsReport</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>That was a lot to unpack, we also need to define a couple of other things too!
+Next we&rsquo;ll define our <code>StandingsFilter</code> and <code>ConstructorStandingsReport</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-graphql" data-lang="graphql"><span style="display:flex;"><span><span style="color:#ff7b72">input</span><span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">StandingsFilter</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">year</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681"> </span>=<span style="color:#6e7681"> </span><span style="color:#79c0ff">current</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">round</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">top</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">Int</span><span style="color:#6e7681"> </span>=<span style="color:#6e7681"> </span><span style="color:#f85149">-</span><span style="color:#79c0ff">1</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">type</span><span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">ConstructorStandingsReport</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">season</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">round</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">teams</span>:<span style="color:#6e7681"> </span>[<span style="color:#f0883e;font-weight:bold">TeamStanding</span>]<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">type</span><span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">TeamStanding</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">position</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">points</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">wins</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">team</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">Constructor</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span><span style="color:#ff7b72">type</span><span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">Constructor</span><span style="color:#6e7681"> </span>{<span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">id</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">name</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">url</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681">  </span><span style="color:#79c0ff">nationality</span>:<span style="color:#6e7681"> </span><span style="color:#f0883e;font-weight:bold">String</span><span style="color:#6e7681">
+</span></span></span><span style="display:flex;"><span><span style="color:#6e7681"></span>}<span style="color:#6e7681">
+</span></span></span></code></pre></div><p>Hopefully this all makes a lot of sense, we&rsquo;ll briefly talk over what each bit means, but I recommend looking at the <a href="https://graphql.org/learn/" target="_blank">graphql docs</a>.
+First, we have an <code>input</code>, this is a special type that means the user will be inputting these values.
+We define default values here too, this allows a user to explicitly state a filter, but not have to worry about each value within the filter.
+After that we have <code>types</code>, the only non-trivial syntax is the <code>teams</code> value where <code>[TeamStanding]</code>, means an array (or slice if you will) of <code>TeamStanding</code>.
+Almost everything else is a <code>String</code>.</p>
+<p>To regenerate that code we simply invoke the <code>gqlgen</code> library again.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>go run github.com/99designs/gqlgen generate
+</span></span></code></pre></div><p>This will create a bunch of files, most importantly is a <code>schema.resolvers.go</code> file, which will have a function defined like below.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">func</span> (r <span style="color:#ff7b72;font-weight:bold">*</span>queryResolver) <span style="color:#d2a8ff;font-weight:bold">ConstructorStandings</span>(ctx context.Context, filter <span style="color:#ff7b72;font-weight:bold">*</span>model.StandingsFilter) (<span style="color:#ff7b72;font-weight:bold">*</span>model.ConstructorStandingsReport, <span style="color:#ff7b72">error</span>) {<span style="color:#ff7b72;font-weight:bold">...</span>}
+</span></span></code></pre></div><p>All we need to do is implement the filter, and make the request to the REST API, and the graphQL library will take care of the rest for us - such as which fields to be returned.</p>
+<h2 id="implementing-the-resolvers">
+  Implementing the Resolvers
+  <a class="heading-link" href="#implementing-the-resolvers">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>For brevity, I&rsquo;m just going to link to the <a href="https://github.com/alexanderjophus/formulagraphql/blob/4197607d66bfeda6b5dad235237d06bf56eb6a8b/graph/schema.resolvers.go#L21-L54" target="_blank">code</a>.</p>
+<p>If you&rsquo;ve ever written a tool that calls a RESTful API this code should look familiar to you.
+It&rsquo;s a bit scrappy - I will admit - however it gets the job done.
+We make a request to the endpoint based on the filters we have, we check the response and deserialise the result.</p>
+<p>That&rsquo;s it.
+We&rsquo;re done.
+Short section.</p>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+</div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Alexander Jophus 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+    </main>
+
+      
+    <script src="/js/coder.js"></script>
+       
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>            
+    
+</body>
+</html>

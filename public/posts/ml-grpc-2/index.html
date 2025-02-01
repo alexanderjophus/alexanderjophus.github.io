@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+  2/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server) · Alexander Jophus
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="Alexander Jophus">
+<meta name="description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+For the full source code, visit alexanderjophus/iris-classification.
+
+  Intro
+  
+    
+    Link to heading
+  
+
+In this section we&rsquo;re going to implement a gRPC service and test it via manual external tools evans.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="2/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server)">
+  <meta name="twitter:description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+For the full source code, visit alexanderjophus/iris-classification.
+Intro Link to heading In this section we’re going to implement a gRPC service and test it via manual external tools evans.">
+
+<meta property="og:url" content="//localhost:1313/posts/ml-grpc-2/">
+  <meta property="og:site_name" content="Alexander Jophus">
+  <meta property="og:title" content="2/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server)">
+  <meta property="og:description" content="DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.
+For the full source code, visit alexanderjophus/iris-classification.
+Intro Link to heading In this section we’re going to implement a gRPC service and test it via manual external tools evans.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2021-11-05T15:37:11+01:00">
+    <meta property="article:modified_time" content="2021-11-05T15:37:11+01:00">
+    <meta property="article:tag" content="Iris">
+
+
+
+
+<link rel="canonical" href="//localhost:1313/posts/ml-grpc-2/">
+
+
+<link
+  rel="preload"
+  href="/fonts/forkawesome-webfont.woff2?v=1.2.0"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+  
+<link rel="stylesheet" href="/css/coder.css" media="screen" />
+ 
+
+
+
+
+
+ 
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>
+
+  </head>
+
+   
+
+  <body
+    class="preload-transitions colorscheme-light"
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="//localhost:1313/">
+      Alexander Jophus
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/sl/">SL</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="https://pokedex.alexanderjophus.dev">Pokédex</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="//localhost:1313/posts/ml-grpc-2/">
+              2/4 CREATING A ML CLASSIFIER GRPC SERVICE WITH GOLANG (implementing a server)
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2021-11-05T15:37:11&#43;01:00">
+                November 5, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              5-minute read
+            </span>
+          </div>
+          
+          
+          <div class="tags">
+  <i class="fa fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/tags/iris/">Iris</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p>DISCLAIMER: This is intending to be a learning exercise and may not be the most efficient way to do things. This is intended to be a multi-part blog post describing how to create a recommender gRPC service in Go.</p>
+<p>For the full source code, visit <a href="https://github.com/alexanderjophus/iris-classification" target="_blank">alexanderjophus/iris-classification</a>.</p>
+<h2 id="intro">
+  Intro
+  <a class="heading-link" href="#intro">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>In this section we&rsquo;re going to implement a gRPC service and test it via manual external tools <a href="https://github.com/ktr0731/evans" target="_blank">evans</a>.</p>
+<h2 id="setting-up">
+  Setting up
+  <a class="heading-link" href="#setting-up">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>For this we will ignore all machine learning and just get our server returning a random iris classification.
+Simple enough.
+For this we&rsquo;ll be using <a href="https://github.com/spf13/cobra" target="_blank">cobra</a>, a library to help make go executables.
+We&rsquo;ll also be adopting some patterns highlighted by Mat Ryers <a href="https://www.youtube.com/watch?v=rWBSMsLG8po" target="_blank">How I write Go Services</a> talk.
+Let&rsquo;s start!</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">package</span> main
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">import</span> <span style="color:#a5d6ff">&#34;github.com/alexanderjophus/iris-classification/svc/cmd&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">main</span>() {
+</span></span><span style="display:flex;"><span>	cmd.<span style="color:#d2a8ff;font-weight:bold">Execute</span>()
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Personally I try to keep main as small as possible, it&rsquo;s a hard package to test and reuse, so why stick around in it?
+Let&rsquo;s write our Execute function.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">package</span> cmd
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// rootCmd represents the base command when called without any subcommands
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">var</span> rootCmd = <span style="color:#ff7b72;font-weight:bold">&amp;</span>cobra.Command{
+</span></span><span style="display:flex;"><span>	Use:   <span style="color:#a5d6ff">&#34;svc&#34;</span>,
+</span></span><span style="display:flex;"><span>	Short: <span style="color:#a5d6ff">&#34;A service to predict iris classifications&#34;</span>,
+</span></span><span style="display:flex;"><span>	Run:   run,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">run</span>(cmd <span style="color:#ff7b72;font-weight:bold">*</span>cobra.Command, args []<span style="color:#ff7b72">string</span>) {}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// Execute adds all child commands to the root command and sets flags appropriately.
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// This is called by main.main(). It only needs to happen once to the rootCmd.
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">Execute</span>() {
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">:=</span> rootCmd.<span style="color:#d2a8ff;font-weight:bold">Execute</span>(); err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>		fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(err)
+</span></span><span style="display:flex;"><span>		os.<span style="color:#d2a8ff;font-weight:bold">Exit</span>(<span style="color:#a5d6ff">1</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Execute is a minimal function, aiming to just call the cobra commands Execute function.
+This gives us a <code>run()</code> function we can test more easily, we also get passed args and the cmd itself should we need them (we won&rsquo;t in this case).
+Another thing to highlight is the fields we set in <code>rootCmd</code>, we set the usage name, a short description of what we&rsquo;re doing, and the function to run.
+Let&rsquo;s look into that <code>run()</code> function in further detail, we need to set up our server still.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">import</span> (
+</span></span><span style="display:flex;"><span>	pb <span style="color:#a5d6ff">&#34;github.com/alexanderjophus/iris-classification/proto/gen/go/iris_classification/v1&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;github.com/alexanderjophus/iris-classification/svc/server&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;google.golang.org/grpc&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">run</span>(cmd <span style="color:#ff7b72;font-weight:bold">*</span>cobra.Command, args []<span style="color:#ff7b72">string</span>) {
+</span></span><span style="display:flex;"><span>	s <span style="color:#ff7b72;font-weight:bold">:=</span> server.<span style="color:#d2a8ff;font-weight:bold">New</span>()
+</span></span><span style="display:flex;"><span>	grpcS <span style="color:#ff7b72;font-weight:bold">:=</span> grpc.<span style="color:#d2a8ff;font-weight:bold">NewServer</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">defer</span> grpcS.<span style="color:#d2a8ff;font-weight:bold">GracefulStop</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	pb.<span style="color:#d2a8ff;font-weight:bold">RegisterIrisClassificationServiceServer</span>(grpcS, <span style="color:#ff7b72;font-weight:bold">&amp;</span>s)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	address <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#a5d6ff">&#34;:32400&#34;</span>
+</span></span><span style="display:flex;"><span>	log.<span style="color:#d2a8ff;font-weight:bold">Printf</span>(<span style="color:#a5d6ff">&#34;listening to address %s&#34;</span>, address)
+</span></span><span style="display:flex;"><span>	listener, err <span style="color:#ff7b72;font-weight:bold">:=</span> net.<span style="color:#d2a8ff;font-weight:bold">Listen</span>(<span style="color:#a5d6ff">&#34;tcp&#34;</span>, address)
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>		log.<span style="color:#d2a8ff;font-weight:bold">Fatal</span>(err)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	grpcS.<span style="color:#d2a8ff;font-weight:bold">Serve</span>(listener)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The first thing we do is create a new server struct <code>s</code> (we&rsquo;ll get around to how that looks next), this code is in another package for separation of concerns.
+The next two lines of code are creating a gRPC server, and telling it to shutdown gracefully once we&rsquo;re done.
+After that we must register the gRPC server, at this point the code will complain if our server doesn&rsquo;t implement the functions in part 1.
+Next we create a port to list on, a listener, and then run <code>grpcS.Serve(listener)</code> this is like <code>http.ListenAndServe</code>, but for gRPC.</p>
+<p>Now we have our cmd package ready to run, let&rsquo;s implement the server.</p>
+<h2 id="implementing-the-server">
+  Implementing the server
+  <a class="heading-link" href="#implementing-the-server">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Let&rsquo;s take a look</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">package</span> server
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;context&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	pb <span style="color:#a5d6ff">&#34;github.com/alexanderjophus/iris-classification/proto/gen/go/iris_classification/v1&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// New returns a new S
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">New</span>() S {
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">return</span> S{}
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// S Implements the IrisClassificationService
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">type</span> S <span style="color:#ff7b72">struct</span> {
+</span></span><span style="display:flex;"><span>	pb.UnimplementedIrisClassificationServiceServer
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// Predict implements proto
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">func</span> (s <span style="color:#ff7b72;font-weight:bold">*</span>S) <span style="color:#d2a8ff;font-weight:bold">Predict</span>(ctx context.Context, req <span style="color:#ff7b72;font-weight:bold">*</span>pb.PredictRequest) (<span style="color:#ff7b72;font-weight:bold">*</span>pb.PredictResponse, <span style="color:#ff7b72">error</span>) {
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">return</span> <span style="color:#79c0ff">nil</span>, status.<span style="color:#d2a8ff;font-weight:bold">Errorf</span>(codes.Unimplemented, <span style="color:#a5d6ff">&#34;method Predict not implemented&#34;</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We have a struct <code>S</code>, which is our server, and a <code>New()</code> func to instantiate the struct.
+It&rsquo;s important to use the Unimplemented server within our own server, there was a long discussion around pros and cons of implementing it <a href="https://github.com/grpc/grpc-go/issues/3669" target="_blank">here</a>.
+It is possible to turn it off, but I&rsquo;d recommend keeping it anyway.
+Lastly we have the <code>Predict</code> function, which for the time being we&rsquo;ve just copied the Unimplemented Servers function of <code>Unimplemented</code>.
+This is the function we want to eventually predict iris classifications, in the meantime let&rsquo;s just make it return a random classification.</p>
+<p>We can start by defining a var outside our Predict function <code>var irisFlowers = []string{&quot;iris setosa&quot;, &quot;iris versicolor&quot;, &quot;iris virginica&quot;}</code>.
+After that we can use the <a href="https://pkg.go.dev/math/rand" target="_blank">rand</a> package to pick a random element from our slice.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic">// Predict implements proto
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span><span style="color:#ff7b72">func</span> (s <span style="color:#ff7b72;font-weight:bold">*</span>S) <span style="color:#d2a8ff;font-weight:bold">Predict</span>(ctx context.Context, req <span style="color:#ff7b72;font-weight:bold">*</span>pb.PredictRequest) (<span style="color:#ff7b72;font-weight:bold">*</span>pb.PredictResponse, <span style="color:#ff7b72">error</span>) {
+</span></span><span style="display:flex;"><span>	rand.<span style="color:#d2a8ff;font-weight:bold">Seed</span>(time.<span style="color:#d2a8ff;font-weight:bold">Now</span>().<span style="color:#d2a8ff;font-weight:bold">Unix</span>()) <span style="color:#8b949e;font-style:italic">// initialize global pseudo random generator
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>	iris <span style="color:#ff7b72;font-weight:bold">:=</span> irisFlowers[rand.<span style="color:#d2a8ff;font-weight:bold">Intn</span>(len(irisFlowers))]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#ff7b72">return</span> <span style="color:#ff7b72;font-weight:bold">&amp;</span>pb.PredictResponse{
+</span></span><span style="display:flex;"><span>		Predicition: iris,
+</span></span><span style="display:flex;"><span>	}, <span style="color:#79c0ff">nil</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now we should be all done with our server, let&rsquo;s test it.</p>
+<ul>
+<li><code>go run svc/main.go</code></li>
+</ul>
+<p>This gets our service up and running, you should see a log line similar to</p>
+<ul>
+<li><code>2021/11/07 11:54:55 listening to address :32400</code></li>
+</ul>
+<h2 id="introducing-evans">
+  Introducing Evans
+  <a class="heading-link" href="#introducing-evans">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p><a href="https://github.com/ktr0731/evans" target="_blank">Evans</a> is a tool to call gRPC services from the command line.
+From the root of our repo, run</p>
+<ul>
+<li><code>evans -p 32400 proto/idl/iris_classification/v1/service.proto</code></li>
+</ul>
+<p>From here we can explore our gRPC service through various commands like <code>show</code>, and <code>desc</code>.
+After a bit of exploring, we&rsquo;ll run <code>call Predict</code>, this allows us to enter the details of the Request message from our first blog post.
+Enter in some random data (it doesn&rsquo;t matter what so long as it&rsquo;s the right type), as we return a random iris classification anyway.
+You should see something like this;</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>iris_classification.v1.IrisClassificationService@127.0.0.1:32400&gt; call Predict
+</span></span><span style="display:flex;"><span>petal_length <span style="color:#ff7b72;font-weight:bold">(</span>TYPE_FLOAT<span style="color:#ff7b72;font-weight:bold">)</span> <span style="color:#ff7b72;font-weight:bold">=</span>&gt; 1.3
+</span></span><span style="display:flex;"><span>petal_width <span style="color:#ff7b72;font-weight:bold">(</span>TYPE_FLOAT<span style="color:#ff7b72;font-weight:bold">)</span> <span style="color:#ff7b72;font-weight:bold">=</span>&gt; 2.1
+</span></span><span style="display:flex;"><span>sepal_length <span style="color:#ff7b72;font-weight:bold">(</span>TYPE_FLOAT<span style="color:#ff7b72;font-weight:bold">)</span> <span style="color:#ff7b72;font-weight:bold">=</span>&gt; 5.6
+</span></span><span style="display:flex;"><span>sepal_width <span style="color:#ff7b72;font-weight:bold">(</span>TYPE_FLOAT<span style="color:#ff7b72;font-weight:bold">)</span> <span style="color:#ff7b72;font-weight:bold">=</span>&gt; 3.4
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a5d6ff">&#34;predicition&#34;</span>: <span style="color:#a5d6ff">&#34;iris setosa&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72;font-weight:bold">}</span>
+</span></span></code></pre></div><h2 id="in-summary">
+  In Summary
+  <a class="heading-link" href="#in-summary">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>We have;</p>
+<ul>
+<li>Created a gRPC service</li>
+<li>Tested it runs correctly</li>
+</ul>
+<p>Next we will;</p>
+<ul>
+<li>Create a model for our service to consume</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+</div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Alexander Jophus 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+    </main>
+
+      
+    <script src="/js/coder.js"></script>
+       
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>            
+    
+</body>
+</html>

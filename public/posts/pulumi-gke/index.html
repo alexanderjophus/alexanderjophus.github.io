@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>
+  INFRASTRUCTURE AS CODE (Pulumi &#43; Go) · Alexander Jophus
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="Alexander Jophus">
+<meta name="description" content="
+  Intro
+  
+    
+    Link to heading
+  
+
+So you&rsquo;ve been playing with the cloud for a bit, you&rsquo;ve been fiddling with some dials, deploying some new services, and flipping some switches.
+Production is running smoothly.
+You get the new requirements to spin up a staging environment so you can test changes before they get into production.
+Cool.
+Wait, how did we set up prod again?
+Introducing the concept Infrastructure as Code, in short this allows you to commit your infrastructure to your version control system.
+Allowing you to deploy new environments really easily, automatically deploy changes, and roll back changes should you need to.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="INFRASTRUCTURE AS CODE (Pulumi &#43; Go)">
+  <meta name="twitter:description" content=" Intro Link to heading So you’ve been playing with the cloud for a bit, you’ve been fiddling with some dials, deploying some new services, and flipping some switches. Production is running smoothly. You get the new requirements to spin up a staging environment so you can test changes before they get into production. Cool. Wait, how did we set up prod again?
+Introducing the concept Infrastructure as Code, in short this allows you to commit your infrastructure to your version control system. Allowing you to deploy new environments really easily, automatically deploy changes, and roll back changes should you need to.">
+
+<meta property="og:url" content="//localhost:1313/posts/pulumi-gke/">
+  <meta property="og:site_name" content="Alexander Jophus">
+  <meta property="og:title" content="INFRASTRUCTURE AS CODE (Pulumi &#43; Go)">
+  <meta property="og:description" content=" Intro Link to heading So you’ve been playing with the cloud for a bit, you’ve been fiddling with some dials, deploying some new services, and flipping some switches. Production is running smoothly. You get the new requirements to spin up a staging environment so you can test changes before they get into production. Cool. Wait, how did we set up prod again?
+Introducing the concept Infrastructure as Code, in short this allows you to commit your infrastructure to your version control system. Allowing you to deploy new environments really easily, automatically deploy changes, and roll back changes should you need to.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2021-11-20T17:30:21+00:00">
+    <meta property="article:modified_time" content="2021-11-20T17:30:21+00:00">
+    <meta property="article:tag" content="Iac">
+
+
+
+
+<link rel="canonical" href="//localhost:1313/posts/pulumi-gke/">
+
+
+<link
+  rel="preload"
+  href="/fonts/forkawesome-webfont.woff2?v=1.2.0"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+  
+<link rel="stylesheet" href="/css/coder.css" media="screen" />
+ 
+
+
+
+
+
+ 
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>
+
+  </head>
+
+   
+
+  <body
+    class="preload-transitions colorscheme-light"
+  >
+    
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+    <main class="wrapper">
+      <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="//localhost:1313/">
+      Alexander Jophus
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/sl/">SL</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="https://pokedex.alexanderjophus.dev">Pokédex</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+      <div class="content">
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="//localhost:1313/posts/pulumi-gke/">
+              INFRASTRUCTURE AS CODE (Pulumi &#43; Go)
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2021-11-20T17:30:21Z">
+                November 20, 2021
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              4-minute read
+            </span>
+          </div>
+          
+          
+          <div class="tags">
+  <i class="fa fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/tags/iac/">Iac</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="intro">
+  Intro
+  <a class="heading-link" href="#intro">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>So you&rsquo;ve been playing with the cloud for a bit, you&rsquo;ve been fiddling with some dials, deploying some new services, and flipping some switches.
+Production is running smoothly.
+You get the new requirements to spin up a staging environment so you can test changes before they get into production.
+Cool.
+Wait, how did we set up prod again?</p>
+<p>Introducing the concept <code>Infrastructure as Code</code>, in short this allows you to commit your infrastructure to your version control system.
+Allowing you to deploy new environments really easily, automatically deploy changes, and roll back changes should you need to.</p>
+<p>That sounds great, what options do I have?
+The big player in the space right now is <a href="https://www.terraform.io/" target="_blank">Terraform</a>, however <a href="https://www.pulumi.com/" target="_blank">Pulumi</a> has been gaining a lot of traction lately.
+Today we&rsquo;re going to look at pulumi, though many of the concepts will stay the same.</p>
+<h2 id="getting-started">
+  Getting Started
+  <a class="heading-link" href="#getting-started">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Recently I tweeted about the concept of speedrunning getting started documentation.
+Pulumi does a great job of helping developers <a href="https://www.pulumi.com/docs/get-started/" target="_blank">get started</a>, no matter the users choice of cloud provider or language.</p>
+<p>We&rsquo;ll be deploying to GCP using Go, so we run.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>pulumi new gcp-go
+</span></span></code></pre></div><p>Assuming we have our environment set up, we can then run;</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>pulumi up
+</span></span></code></pre></div><p>This should create a bucket in GCP.
+How swift was that?</p>
+<h2 id="deploying-to-gke">
+  Deploying To GKE
+  <a class="heading-link" href="#deploying-to-gke">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>To do this, we&rsquo;re going to need to import a few key components.
+We&rsquo;re going to need the GCP project to ensure we can use the container service
+We&rsquo;re going to need the container package to ensure we have the latest version of k8s installed and to create our cluster.
+We&rsquo;re also going to need the kubernetes package to create a provider for us to use later.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">import</span> (
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72;font-weight:bold">...</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;github.com/pulumi/pulumi-gcp/sdk/v5/go/gcp/container&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;github.com/pulumi/pulumi-gcp/sdk/v5/go/gcp/projects&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a5d6ff">&#34;github.com/pulumi/pulumi/sdk/v3/go/pulumi&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72;font-weight:bold">...</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>Next, replace the NewBucket code, with the following.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>containerService, err <span style="color:#ff7b72;font-weight:bold">:=</span> projects.<span style="color:#d2a8ff;font-weight:bold">NewService</span>(ctx, <span style="color:#a5d6ff">&#34;project&#34;</span>, <span style="color:#ff7b72;font-weight:bold">&amp;</span>projects.ServiceArgs{
+</span></span><span style="display:flex;"><span>    Service: pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;container.googleapis.com&#34;</span>),
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> err
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>engineVersions, err <span style="color:#ff7b72;font-weight:bold">:=</span> container.<span style="color:#d2a8ff;font-weight:bold">GetEngineVersions</span>(ctx, <span style="color:#ff7b72;font-weight:bold">&amp;</span>container.GetEngineVersionsArgs{})
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> err
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>masterVersion <span style="color:#ff7b72;font-weight:bold">:=</span> engineVersions.LatestMasterVersion
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cluster, err <span style="color:#ff7b72;font-weight:bold">:=</span> container.<span style="color:#d2a8ff;font-weight:bold">NewCluster</span>(ctx, <span style="color:#a5d6ff">&#34;demo-cluster&#34;</span>, <span style="color:#ff7b72;font-weight:bold">&amp;</span>container.ClusterArgs{
+</span></span><span style="display:flex;"><span>    InitialNodeCount: pulumi.<span style="color:#d2a8ff;font-weight:bold">Int</span>(<span style="color:#a5d6ff">2</span>),
+</span></span><span style="display:flex;"><span>    MinMasterVersion: pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(masterVersion),
+</span></span><span style="display:flex;"><span>    NodeVersion:      pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(masterVersion),
+</span></span><span style="display:flex;"><span>    NodeConfig: <span style="color:#ff7b72;font-weight:bold">&amp;</span>container.ClusterNodeConfigArgs{
+</span></span><span style="display:flex;"><span>        MachineType: pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;n1-standard-1&#34;</span>),
+</span></span><span style="display:flex;"><span>        OauthScopes: pulumi.StringArray{
+</span></span><span style="display:flex;"><span>            pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;https://www.googleapis.com/auth/compute&#34;</span>),
+</span></span><span style="display:flex;"><span>            pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;https://www.googleapis.com/auth/devstorage.read_only&#34;</span>),
+</span></span><span style="display:flex;"><span>            pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;https://www.googleapis.com/auth/logging.write&#34;</span>),
+</span></span><span style="display:flex;"><span>            pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;https://www.googleapis.com/auth/monitoring&#34;</span>),
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>}, pulumi.<span style="color:#d2a8ff;font-weight:bold">DependsOn</span>([]pulumi.Resource{containerService}))
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> err
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ctx.<span style="color:#d2a8ff;font-weight:bold">Export</span>(<span style="color:#a5d6ff">&#34;kubeconfig&#34;</span>, <span style="color:#d2a8ff;font-weight:bold">generateKubeconfig</span>(cluster.Endpoint, cluster.Name, cluster.MasterAuth))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>k8sProvider, err <span style="color:#ff7b72;font-weight:bold">:=</span> kubernetes.<span style="color:#d2a8ff;font-weight:bold">NewProvider</span>(ctx, <span style="color:#a5d6ff">&#34;k8sprovider&#34;</span>, <span style="color:#ff7b72;font-weight:bold">&amp;</span>kubernetes.ProviderArgs{
+</span></span><span style="display:flex;"><span>    Kubeconfig: <span style="color:#d2a8ff;font-weight:bold">generateKubeconfig</span>(cluster.Endpoint, cluster.Name, cluster.MasterAuth),
+</span></span><span style="display:flex;"><span>}, pulumi.<span style="color:#d2a8ff;font-weight:bold">DependsOn</span>([]pulumi.Resource{cluster}))
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> err
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>For brevity I&rsquo;ll link the <a href="https://github.com/alexanderjophus/pulumi/blob/662eb960002abd22cc4caf1016643601a097debf/main.go#L152-L182" target="_blank">generateKubeconfig function</a>.</p>
+<p>Important things to note from the snippet above;</p>
+<ul>
+<li><code>ctx.Export</code> will export a variable <code>kubeconfig</code>, which we can use outside of our pulumi script.</li>
+<li><code>k8sProvider</code> ensures we have a provider to explicitly pass to future functions to ensure we&rsquo;re pointing at the right cluster.</li>
+<li><code>pulumi.DependsOn</code> makes sure we have deployed everything in the correct order.</li>
+</ul>
+<p>After all that if we run <code>pulumi up</code> again, we should have a cluster in GKE.
+Sweet.</p>
+<h2 id="adding-monitoring">
+  Adding Monitoring
+  <a class="heading-link" href="#adding-monitoring">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Next up, we want to deploy some monitoring tools, so that when we deploy any application to the cluster it has logs/metrics/traces all immediately available to use.
+There are a <em>bunch</em> of tools in this space.
+For the sake of simplicity we&rsquo;re going to deploy the <a href="https://grafana.com/docs/loki/latest/installation/helm/" target="_blank">loki-stack</a> helm chart, this comes bundled with logging and metric solutions, as well as a UI to visualise it all.</p>
+<p>We&rsquo;re going to start by creating a new namespace for our monitoring tools - <code>monitoring</code> (creative, I know).</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">import</span> corev1 <span style="color:#a5d6ff">&#34;github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>ns, err <span style="color:#ff7b72;font-weight:bold">:=</span> corev1.<span style="color:#d2a8ff;font-weight:bold">NewNamespace</span>(ctx, <span style="color:#a5d6ff">&#34;monitoring&#34;</span>, <span style="color:#ff7b72;font-weight:bold">&amp;</span>corev1.NamespaceArgs{
+</span></span><span style="display:flex;"><span>    Metadata: <span style="color:#ff7b72;font-weight:bold">&amp;</span>metav1.ObjectMetaArgs{
+</span></span><span style="display:flex;"><span>        Name: pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;monitoring&#34;</span>),
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>}, pulumi.<span style="color:#d2a8ff;font-weight:bold">Provider</span>(k8sProvider))
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> err
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This just uses the <code>corev1</code> package to create a namespace.
+We return the namespace object, as well as check for any errors.
+Note how we use the k8sProvider we defined earlier.
+Now we just need to import the helm package, and deploy our helm chart.</p>
+<div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#ff7b72">import</span> helmv3 <span style="color:#a5d6ff">&#34;github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/helm/v3&#34;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span>_, err = helmv3.<span style="color:#d2a8ff;font-weight:bold">NewChart</span>(ctx, <span style="color:#a5d6ff">&#34;loki-stack&#34;</span>, helmv3.ChartArgs{
+</span></span><span style="display:flex;"><span>    Chart:     pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;loki-stack&#34;</span>),
+</span></span><span style="display:flex;"><span>    Version:   pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;2.5.0&#34;</span>),
+</span></span><span style="display:flex;"><span>    Namespace: ns.Metadata.<span style="color:#d2a8ff;font-weight:bold">Name</span>().<span style="color:#d2a8ff;font-weight:bold">Elem</span>(),
+</span></span><span style="display:flex;"><span>    FetchArgs: helmv3.FetchArgs{
+</span></span><span style="display:flex;"><span>        Repo: pulumi.<span style="color:#d2a8ff;font-weight:bold">String</span>(<span style="color:#a5d6ff">&#34;https://grafana.github.io/helm-charts&#34;</span>),
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    Values: pulumi.Map{
+</span></span><span style="display:flex;"><span>        <span style="color:#a5d6ff">&#34;loki&#34;</span>: pulumi.Map{
+</span></span><span style="display:flex;"><span>            <span style="color:#a5d6ff">&#34;enabled&#34;</span>: pulumi.<span style="color:#d2a8ff;font-weight:bold">Bool</span>(<span style="color:#79c0ff">true</span>),
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        <span style="color:#a5d6ff">&#34;grafana&#34;</span>: pulumi.Map{
+</span></span><span style="display:flex;"><span>            <span style="color:#a5d6ff">&#34;enabled&#34;</span>: pulumi.<span style="color:#d2a8ff;font-weight:bold">Bool</span>(<span style="color:#79c0ff">true</span>),
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>        <span style="color:#a5d6ff">&#34;prometheus&#34;</span>: pulumi.Map{
+</span></span><span style="display:flex;"><span>            <span style="color:#a5d6ff">&#34;enabled&#34;</span>: pulumi.<span style="color:#d2a8ff;font-weight:bold">Bool</span>(<span style="color:#79c0ff">true</span>),
+</span></span><span style="display:flex;"><span>        },
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>}, pulumi.<span style="color:#d2a8ff;font-weight:bold">Provider</span>(k8sProvider), pulumi.<span style="color:#d2a8ff;font-weight:bold">DependsOn</span>([]pulumi.Resource{ns}))
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">if</span> err <span style="color:#ff7b72;font-weight:bold">!=</span> <span style="color:#79c0ff">nil</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">return</span> err
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>By default loki is enabled, but I find it makes more sense to explicitly enable individual services.
+We also reference the ns we used earlier to deploy our monitoring stack in the right namespace.
+Lastly, we also depend on the namespace to be made before we deploy to it.</p>
+<h2 id="next-post">
+  Next Post
+  <a class="heading-link" href="#next-post">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<ul>
+<li>We&rsquo;ll discuss how to use <code>crd2pulumi</code></li>
+<li>How to deploy our own services to the cluster</li>
+<li>Walk through our monitoring stack</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+</div>
+
+      <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Alexander Jophus 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+    </main>
+
+      
+    <script src="/js/coder.js"></script>
+       
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0FK4PHVCM"></script>
+      <script>
+        var doNotTrack = false;
+        if ( false ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Q0FK4PHVCM');
+        }
+      </script>            
+    
+</body>
+</html>

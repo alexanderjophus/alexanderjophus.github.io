@@ -7,45 +7,44 @@ theme = "hugo-coder"
 style = "github-dark"
 
 [params]
-  author = "Alexander Jophus"
-  info = "Software Tinkerer"
-  description = "Alexander Jophus' blog"
-  keywords = "blog,developer,personal"
-  avatarurl = "images/logo.jpeg"
+author = "Alexander Jophus"
+info = "Software Tinkerer"
+description = "Alexander Jophus' blog"
+keywords = "blog,developer,personal"
+avatarurl = "images/logo.jpeg"
 
 [taxonomies]
-  tag = "tags"
+tag = "tags"
 
 [[params.social]]
-  name = "Github"
-  icon = "fa fa-github fa-2x"
-  weight = 1
-  url = "https://github.com/alexanderjophus/"
+name = "Github"
+icon = "fa fa-github fa-2x"
+weight = 1
+url = "https://github.com/alexanderjophus/"
 [[params.social]]
-  name = "Twitter"
-  icon = "fa fa-twitter fa-2x"
-  weight = 2
-  url = "https://twitter.com/AlexanderJophus/"
+name = "LinkedIn"
+icon = "fa fa-linkedin fa-2x"
+weight = 2
+url = "https://www.linkedin.com/in/alexanderjosephtrelore/"
 [[params.social]]
-  name = "LinkedIn"
-  icon = "fa fa-linkedin fa-2x"
-  weight = 3
-  url = "https://www.linkedin.com/in/alexanderjosephtrelore/"
-[[params.social]]
-  name = "mastodon"
-  icon = "fa fa-mastodon fa-2x"
-  weight = 4
-  url = "https://hachyderm.io/@alexanderjophus"
+name = "mastodon"
+icon = "fa fa-mastodon fa-2x"
+weight = 3
+url = "https://hachyderm.io/@alexanderjophus"
 
 [[menu.main]]
-  name = "Blog"
-  weight = 1
-  url  = "posts/"
+name = "Blog"
+weight = 1
+url = "posts/"
 [[menu.main]]
-  name = "Project KIE"
-  weight = 2
-  url = "kie/"
-  
+name = "SL"
+weight = 2
+url = "sl/"
+[[menu.main]]
+name = "Pokédex"
+weight = 3
+url = "https://pokedex.alexanderjophus.dev"
+
 [services]
-  [services.googleAnalytics]
-    ID = 'G-Q0FK4PHVCM'
+[services.googleAnalytics]
+ID = 'G-Q0FK4PHVCM'
