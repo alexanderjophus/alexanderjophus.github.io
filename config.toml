@@ -44,6 +44,10 @@ url = "sl/"
 name = "Pokédex"
 weight = 3
 url = "https://pokedex.alexanderjophus.dev"
+[[menu.main]]
+name = "Game of Life"
+weight = 4
+url = "https://gameoflife.alexanderjophus.dev"
 
 [services]
 [services.googleAnalytics]
