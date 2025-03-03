@@ -45,8 +45,12 @@ name = "Pokédex"
 weight = 3
 url = "https://pokedex.alexanderjophus.dev"
 [[menu.main]]
-name = "Game of Life"
+name = "WASME"
 weight = 4
+url = "https://wasme.alexanderjophus.dev"
+[[menu.main]]
+name = "Game of Life"
+weight = 5
 url = "https://gameoflife.alexanderjophus.dev"
 
 [services]
